@@ -47,7 +47,7 @@ page_body_add( function() {
 		</div>
 		<div class="w3-container">
 			<div class="w3-section">
-				<button class="w3-button w3-round w3-theme" type="submit">
+				<button class="w3-button w3-round w3-theme-action" type="submit">
 					<span class="fa fa-floppy-o"></span>
 					<span>αποθήκευση</span>
 				</button>

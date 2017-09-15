@@ -33,7 +33,7 @@ logout();
 	$user->reg_ip = $_SERVER['REMOTE_ADDR'];
 	$user->insert();
 	$vlink = vlink::write( $user->user_id, 'register' );
-	require_once HOME_DIR . 'php/mailer.php';
+	require_once SITE_DIR . 'php/mailer.php';
 	$mail = new mailer();
 	$mail->addAddress( $user->email_address );
 	$mail->Subject = sprintf( '%s - %s', SITE_NAME, 'εγγραφή' );
@@ -73,7 +73,7 @@ page_body_add( function() {
 		</div>
 		<div class="w3-container">
 			<div class="w3-section">
-				<button class="w3-button w3-round w3-theme" type="submit">
+				<button class="w3-button w3-round w3-theme-action" type="submit">
 					<span class="fa fa-power-off"></span>
 					<span>εγγραφή</span>
 				</button>

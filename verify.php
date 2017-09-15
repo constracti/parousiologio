@@ -28,18 +28,21 @@ page_title_set( 'Επαλήθευση' );
 	switch ( $vlink->type ) {
 		case 'register':
 			$user->role_id = user::ROLE_GUEST;
+			$user->update();
 			page_message_add( 'Η εγγραφή σου ολοκληρώθηκε επιτυχώς. Μπορείς πλέον να συνδεθείς.', 'success' );
+			# TODO inform admin
 			break;
 		case 'repass':
 			$user->password_hash = $vlink->data;
+			$user->update();
 			page_message_add( 'Μπορείς να συνδεθείς με τον καινούριο σου κωδικό.', 'success' );
 			break;
 		case 'chmail':
 			$user->email_address = $vlink->data;
+			$user->update();
 			page_message_add( 'Η διεύθυνση email του λογαριασμού άλλαξε επιτυχώς.', 'success' );
 			break;
 	}
-	$user->update();
 } )();
 
 page_message_add( sprintf( 'Μετάβαση στην <a href="%s">αρχική σελίδα</a>.', HOME_URL ), 'info' );

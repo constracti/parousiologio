@@ -63,6 +63,7 @@ if ( array_key_exists( 'login', $_GET ) ) {
 		$user->reg_time = dtime::php2sql( $_SERVER['REQUEST_TIME'] );
 		$user->reg_ip = $_SERVER['REMOTE_ADDR'];
 		$user->insert();
+		# TODO inform admin
 	}
 	epoint::write( $user->user_id );
 } elseif ( array_key_exists( 'error', $_GET ) ) {

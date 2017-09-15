@@ -57,8 +57,11 @@ abstract class entity {
 		else
 			$limit = sprintf( ' LIMIT %d', $limit );
 		// QUERY
-		$sql = sprintf( 'SELECT %s FROM `%s`', $props, DB_PREF . $class ) . $where . $orderby . $limit . ';';
+		$sql = sprintf( 'SELECT %s FROM `xa_%s`', $props, $class ) . $where . $orderby . $limit . ';';
 		$stmt = $db->prepare( $sql );
+		# TODO delete following lines when on air
+		if ( $stmt === FALSE )
+			exit( $db->error );
 		if ( !empty( $values ) )
 			$stmt->bind_param( $types, ...$values );
 		$stmt->execute();
@@ -66,7 +69,7 @@ abstract class entity {
 		$stmt->close();
 		$items = [];
 		while ( !is_null( $item = $rslt->fetch_object( $class ) ) )
-			$items[] = $item;
+			$items[ $item->$id ] = $item;
 		$rslt->free();
 		return $items;
 	}
@@ -98,7 +101,7 @@ abstract class entity {
 		$props = implode( ', ', $props );
 		$marks = implode( ', ', $marks );
 		$types = implode( $types );
-		$sql = sprintf( 'INSERT INTO `%s` ( %s ) VALUES ( %s );', DB_PREF . $class, $props, $marks );
+		$sql = sprintf( 'INSERT INTO `xa_%s` ( %s ) VALUES ( %s );', $class, $props, $marks );
 		$stmt = $db->prepare( $sql );
 		$stmt->bind_param( $types, ...$values );
 		$stmt->execute();
@@ -127,7 +130,7 @@ abstract class entity {
 		$values[] = $this->$id;
 		$set = implode( ', ', $set );
 		$types = implode( $types );
-		$sql = sprintf( 'UPDATE `%s` SET %s WHERE `%s` = ?;', DB_PREF . $class, $set, $id );
+		$sql = sprintf( 'UPDATE `xa_%s` SET %s WHERE `%s` = ?;', $class, $set, $id );
 		$stmt = $db->prepare( $sql );
 		$stmt->bind_param( $types, ...$values );
 		$stmt->execute();
@@ -145,10 +148,27 @@ abstract class entity {
 				break;
 			}
 		}
-		$sql = sprintf( 'DELETE FROM `%s` WHERE `%s` = ?;', DB_PREF . $class, $id );
+		$sql = sprintf( 'DELETE FROM `xa_%s` WHERE `%s` = ?;', $class, $id );
 		$stmt = $db->prepare( $sql );
 		$stmt->bind_param( $fields[ $id ], $this->$id );
 		$stmt->execute();
 		$stmt->close();
+	}
+
+	public static function request() {
+		$class = get_called_class();
+		$fields = $class::FIELDS;
+		$id = NULL;
+		foreach ( $fields as $prop => $type ) {
+			if ( is_null( $id ) ) {
+				$id = $prop;
+				break;
+			}
+		}
+		$item_id = request_int( $id );
+		$item = $class::select_by( $id, $item_id );
+		if ( is_null( $item ) )
+			failure();
+		return $item;
 	}
 }

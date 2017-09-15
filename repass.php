@@ -18,7 +18,7 @@ logout();
 	if ( $user->role_id === user::ROLE_UNVER )
 		return page_message_add( 'Ακολούθησε πρώτα τον σύνδεσμο επαλήθευσης από τα εισερχόμενά σου.', 'error' );
 	$vlink = vlink::write( $user->user_id, 'repass', password_hash( $_POST['password'], PASSWORD_DEFAULT ) );
-	require_once HOME_DIR . 'php/mailer.php';
+	require_once SITE_DIR . 'php/mailer.php';
 	$mail = new mailer();
 	$mail->addAddress( $user->email_address );
 	$mail->Subject = sprintf( '%s - %s', SITE_NAME, 'επαναφορά κωδικού πρόσβασης' );
@@ -47,7 +47,7 @@ page_body_add( function() {
 			<input class="w3-input" name="password" type="password" required="required" placeholder="καινούριος κωδικός πρόσβασης" />
 		</div>
 		<div class="w3-section">
-			<button class="w3-button w3-round w3-theme" type="submit">
+			<button class="w3-button w3-round w3-theme-action" type="submit">
 				<span class="fa fa-lock"></span>
 				<span>επαναφορά</span>
 			</button>

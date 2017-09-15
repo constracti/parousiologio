@@ -41,9 +41,9 @@ page_body_add( function() {
 			<input class="w3-input" name="password" type="password" required="required" placeholder="καινούριος κωδικός πρόσβασης" />
 		</div>
 		<div class="w3-section">
-			<button class="w3-button w3-round w3-theme" type="submit">
-				<span class="fa fa-lock"></span>
-				<span>αλλαγή</span>
+			<button class="w3-button w3-round w3-theme-action" type="submit">
+				<span class="fa fa-floppy-o"></span>
+				<span>αποθήκευση</span>
 			</button>
 		</div>
 	</form>

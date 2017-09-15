@@ -26,7 +26,7 @@ if ( is_null( $cuser ) ) {
 			return page_message_add( 'Υπάρχει άλλος εγγεγραμμένος χρήστης με αυτή τη διεύθυνση email.', 'error' );
 	}
 	$vlink = vlink::write( $cuser->user_id, 'chmail', $email_address );
-	require_once HOME_DIR . 'php/mailer.php';
+	require_once SITE_DIR . 'php/mailer.php';
 	$mail = new mailer();
 	$mail->addAddress( $email_address );
 	$mail->Subject = sprintf( '%s - %s', SITE_NAME, 'αλλαγή διεύθυνσης email' );
@@ -65,9 +65,9 @@ page_body_add( function() {
 			<input class="w3-input" name="email_address" type="email" required="required" placeholder="καινούρια διεύθυνση email" value="<?= $_POST['email_address'] ?? $cuser->email_address ?? '' ?>" />
 		</div>
 		<div class="w3-section">
-			<button class="w3-button w3-round w3-theme" type="submit">
-				<span class="fa fa-envelope"></span>
-				<span>αλλαγή</span>
+			<button class="w3-button w3-round w3-theme-action" type="submit">
+				<span class="fa fa-floppy-o"></span>
+				<span>αποθήκευση</span>
 			</button>
 		</div>
 	</form>
