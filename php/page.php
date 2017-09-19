@@ -2,18 +2,12 @@
 
 require_once 'core.php';
 require_once 'panel.php';
+require_once 'field.php';
 
 
 function failure() {
-	header( 'location: ' . HOME_URL );
+	header( 'location: ' . SITE_URL );
 	exit;
-}
-
-
-function checked( bool $checked ): string {
-	if ( $checked )
-		return ' checked="checked"';
-	return '';
 }
 
 
@@ -92,15 +86,15 @@ if ( !is_null( $cuser ) )
 					<span class="fa fa-caret-down"></span>
 				</button>
 				<div class="w3-dropdown-content w3-bar-block w3-theme-l2" style="min-width: initial;">
-					<a class="w3-bar-item w3-button" href="<?= HOME_URL ?>profile.php" title="προφίλ">
+					<a class="w3-bar-item w3-button" href="<?= SITE_URL ?>profile.php" title="προφίλ">
 						<span class="fa fa-pencil"></span>
 						<span class="w3-hide-small">προφίλ</span>
 					</a>
-					<a class="w3-bar-item w3-button" href="<?= HOME_URL ?>settings.php" title="ρυθμίσεις">
+					<a class="w3-bar-item w3-button" href="<?= SITE_URL ?>settings.php" title="ρυθμίσεις">
 						<span class="fa fa-cog"></span>
 						<span class="w3-hide-small">ρυθμίσεις</span>
 					</a>
-					<a class="w3-bar-item w3-button" href="<?= HOME_URL ?>logout.php" title="έξοδος">
+					<a class="w3-bar-item w3-button" href="<?= SITE_URL ?>logout.php" title="έξοδος">
 						<span class="fa fa-sign-out"></span>
 						<span class="w3-hide-small">έξοδος</span>
 					</a>
@@ -146,9 +140,62 @@ function page_message_add( string $html, string $type = '' ) {
 
 $page_bodies = [];
 
-function page_body_add( callable $body ) {
+function page_body_add( callable $function, ...$arguments ) {
 	global $page_bodies;
-	$page_bodies[] = $body;
+	$page_bodies[] = [
+		'function'  => $function,
+		'arguments' => $arguments,
+	];
+}
+
+function form_html( array $fields, array $arguments = [] ) {
+	if ( !array_key_exists( 'full_screen', $arguments ) )
+		$arguments['full_screen'] = FALSE;
+	if ( !array_key_exists( 'responsive', $arguments ) )
+		$arguments['responsive'] = 'w3-col s12';
+	if ( !array_key_exists( 'submit_icon', $arguments ) )
+		$arguments['submit_icon'] = 'fa-floppy-o';
+	if ( !array_key_exists( 'submit_text', $arguments ) )
+		$arguments['submit_text'] = 'αποθήκευση';
+	if ( $arguments['full_screen'] )
+		echo '<section class="w3-panel">' . "\n";
+	else
+		echo '<section class="w3-panel w3-content">' . "\n";
+	echo '<form class="w3-card-4 w3-round w3-theme-l4" method="post">' . "\n";
+	if ( array_key_exists( 'header', $arguments ) ) {
+		echo '<div class="w3-container">' . "\n";
+		echo $arguments['header'];
+		echo '</div>';
+	}
+	echo '<div class="w3-row-padding">' . "\n";
+	foreach ( $fields as $field ) {
+		echo sprintf( '<div class="w3-margin-top %s">', $arguments['responsive'] ) . "\n";
+		$field->html();
+		echo '</div>' . "\n";
+	}
+	echo '</div>' . "\n";
+	echo '<div class="w3-container">' . "\n";
+	echo '<div class="w3-section">' . "\n";
+	echo '<button class="w3-button w3-round w3-theme-action" type="submit">' . "\n";
+	echo sprintf( '<span class="fa %s"></span>', $arguments['submit_icon'] ) . "\n";
+	echo sprintf( '<span>%s</span>', $arguments['submit_text'] ) . "\n";
+	echo '</button>' . "\n";
+	if ( array_key_exists( 'delete', $arguments ) ) {
+		echo sprintf( '<a class="w3-button w3-round w3-theme w3-right" href="%s" onclick="return confirm( \'οριστική διαγραφή;\' );">', $arguments['delete'] ) . "\n";
+		echo '<span class="fa fa-trash"></span>' . "\n";
+		echo '<span>διαγραφή</span>' . "\n";
+		echo '</a>' . "\n";
+	}
+		echo $arguments['secondary'];
+	echo '</div>' . "\n";
+	echo '</div>' . "\n";
+	if ( array_key_exists( 'footer', $arguments ) ) {
+		echo '<div class="w3-container">' . "\n";
+		echo $arguments['footer'];
+		echo '</div>';
+	}
+	echo '</form>' . "\n";
+	echo '</section>' . "\n";
 }
 
 
@@ -173,7 +220,7 @@ function season_dropdown() {
 <?php
 	foreach ( season::select( [], [ 'year' => 'DESC' ] ) as $season ) {
 		$class = 'w3-bar-item w3-button';
-		$href = HOME_URL;
+		$href = SITE_URL;
 		if ( $season->year !== $lyear )
 			$href .= '?year=' . $season->year;
 		if ( $season->year === $cyear )
@@ -195,7 +242,7 @@ function season_dropdown() {
 function season_home(): string {
 	global $cyear;
 	global $lyear;
-	$href = HOME_URL;
+	$href = SITE_URL;
 	if ( $cyear !== $lyear )
 		$href .= '?year=' . $cyear;
 	return $href;
@@ -206,22 +253,15 @@ $lyear = season::select_last();
 if ( !is_null( $lyear ) ) {
 	$lyear = $lyear->year;
 	$cyear = ( function() {
-		if ( array_key_exists( 'year', $_GET ) ) {
-			$year = filter_var( $_GET['year'], FILTER_VALIDATE_INT );
-			if ( $year === FALSE )
-				return NULL;
+		$year = request_year( 'year', TRUE );
+		if ( !is_null( $year ) ) {
 			$season = season::select_by( 'year', $year );
 			if ( is_null( $season ) )
-				return NULL;
+				failure();
 			return $season->year;
 		}
-		if ( array_key_exists( 'team_id', $_GET ) ) {
-			$team_id = filter_var( $_GET['team_id'], FILTER_VALIDATE_INT );
-			if ( $team_id === FALSE )
-				return NULL;
-			$team = team::select_by( 'team_id', $team_id );
-			if ( is_null( $team ) )
-				return NULL;
+		$team = team::request( 'team_id', TRUE );
+		if ( !is_null( $team ) ) {
 			$season = season::select_by( 'season_id', $team->season_id );
 			return $season->year;
 		}
@@ -252,7 +292,7 @@ function page_html() {
 		<meta name="description" content="Παρουσιολόγιο Χαρούμενων Αγωνιστών Αθήνας" />
 		<meta name="keywords" content="παρουσίες, παρουσίες χα, παρουσιολόγιο, χαρούμενοι αγωνιστές, χαρούμενοι, αγωνιστές, παρουσιολόγιο χαρούμενων αγωνιστών, παρουσιολόγιο χα, χα, parousies, parousies xa, parousiologio, xaroumenoi agonistes, xaroumenoi, agonistes, parousiologio xaroumenon agoniston, parousiologio xa, xa" />
 		<title><?= $page_title ?></title>
-		<link rel="icon" href="<?= HOME_URL ?>favicon-256.png" />
+		<link rel="icon" href="<?= SITE_URL ?>favicon-256.png" />
 <?php
 	foreach ( $page_styles as $style ) {
 ?>
@@ -269,7 +309,7 @@ function page_html() {
 	<body class="w3-theme-l5">
 		<div class="w3-bar w3-theme">
 			<a class="w3-bar-item w3-button" href="<?= season_home() ?>" title="αρχική σελίδα">
-				<img src="<?= HOME_URL ?>favicon-256.png" style="height: 24px; width: auto; margin: -4px 0px;" />
+				<img src="<?= SITE_URL ?>favicon-256.png" style="height: 24px; width: auto; margin: -4px 0px;" />
 				<span class="w3-hide-small"><?= SITE_NAME ?></span>
 			</a>
 <?php
@@ -280,7 +320,7 @@ function page_html() {
 		<h1 class="w3-panel w3-content w3-text-theme w3-center"><?= $page_title ?></h1>
 <?php
 	if ( !is_null( $cuser ) && ( is_null( $cuser->last_name ) || is_null( $cuser->first_name ) ) )
-		page_message_add( sprintf( 'Συμπλήρωσε τα στοιχεία σου στο <a href="%sprofile.php">προφίλ</a>.', HOME_URL ), 'warning' );
+		page_message_add( sprintf( 'Συμπλήρωσε τα στοιχεία σου στο <a href="%sprofile.php">προφίλ</a>.', SITE_URL ), 'warning' );
 	foreach ( $page_messages as $message ) {
 ?>
 		<div class="w3-panel w3-content">
@@ -291,7 +331,7 @@ function page_html() {
 <?php
 	}
 	foreach ( $page_bodies as $body )
-		$body();
+		$body['function']( ...$body['arguments'] );
 ?>
 	</body>
 </html>

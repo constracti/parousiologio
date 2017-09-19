@@ -41,7 +41,7 @@ class epoint extends entity {
 		$epoint->logins = 0;
 		$epoint->insert();
 		setcookie( 'epoint', $epoint->epoint_id . self::DELIMITER . $code, $exp_tm );
-		header( 'location: ' . HOME_URL );
+		header( 'location: ' . SITE_URL );
 		exit;
 	}
 

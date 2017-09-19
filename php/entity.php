@@ -59,9 +59,6 @@ abstract class entity {
 		// QUERY
 		$sql = sprintf( 'SELECT %s FROM `xa_%s`', $props, $class ) . $where . $orderby . $limit . ';';
 		$stmt = $db->prepare( $sql );
-		# TODO delete following lines when on air
-		if ( $stmt === FALSE )
-			exit( $db->error );
 		if ( !empty( $values ) )
 			$stmt->bind_param( $types, ...$values );
 		$stmt->execute();
@@ -155,7 +152,7 @@ abstract class entity {
 		$stmt->close();
 	}
 
-	public static function request() {
+	public static function request( string $key, bool $nullable = FALSE ) {
 		$class = get_called_class();
 		$fields = $class::FIELDS;
 		$id = NULL;
@@ -165,10 +162,14 @@ abstract class entity {
 				break;
 			}
 		}
-		$item_id = request_int( $id );
-		$item = $class::select_by( $id, $item_id );
-		if ( is_null( $item ) )
-			failure();
-		return $item;
+		$var = request_int( $key, $nullable );
+		if ( is_null( $var ) )
+			return NULL;
+		$var = $class::select_by( $id, $var );
+		if ( !is_null( $var ) )
+			return $var;
+		if ( $nullable )
+			return NULL;
+		failure();
 	}
 }

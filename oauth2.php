@@ -1,5 +1,7 @@
 <?php
 
+# TODO localize error messages
+
 require_once 'php/core.php';
 
 logout();
@@ -13,7 +15,7 @@ switch ( $_GET['provider'] ) {
 		$provider = new League\OAuth2\Client\Provider\Google( [
 			'clientId'     => GOOGLE_CLIENT_ID,
 			'clientSecret' => GOOGLE_CLIENT_SECRET,
-			'redirectUri'  => HOME_URL . 'oauth2.php?provider=google',
+			'redirectUri'  => SITE_URL . 'oauth2.php?provider=google',
 		] );
 		$scope = [ 'email' ];
 		break;
@@ -22,7 +24,7 @@ switch ( $_GET['provider'] ) {
 		$provider = new Stevenmaguire\OAuth2\Client\Provider\Microsoft( [
 			'clientId'     => MICROSOFT_CLIENT_ID,
 			'clientSecret' => MICROSOFT_CLIENT_SECRET,
-			'redirectUri'  => HOME_URL . 'oauth2.php?provider=microsoft',
+			'redirectUri'  => SITE_URL . 'oauth2.php?provider=microsoft',
 		] );
 		$scope = [ 'wl.emails' ];
 		break;
@@ -31,7 +33,7 @@ switch ( $_GET['provider'] ) {
 		$provider = new Hayageek\OAuth2\Client\Provider\Yahoo( [
 			'clientId'     => YAHOO_CLIENT_ID,
 			'clientSecret' => YAHOO_CLIENT_SECRET,
-			'redirectUri'  => HOME_URL . 'oauth2.php?provider=yahoo',
+			'redirectUri'  => SITE_URL . 'oauth2.php?provider=yahoo',
 		] );
 		$scope = [ 'openid' ];
 		break;

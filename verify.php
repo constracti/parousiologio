@@ -5,19 +5,9 @@ require_once 'php/page.php';
 page_title_set( 'Επαλήθευση' );
 
 ( function() {
-	if ( !array_key_exists( 'vlink_id', $_GET ) || !array_key_exists( 'code', $_GET ) ) {
-		header( 'location: ' . HOME_URL );
-		exit;
-	}
-	$vlink_id = filter_var( $_GET['vlink_id'], FILTER_VALIDATE_INT );
-	if ( $vlink_id === FALSE ) {
-		header( 'location: ' . HOME_URL );
-		exit;
-	}
-	$vlink = vlink::select_by( 'vlink_id', $vlink_id );
-	if ( is_null( $vlink ) )
-		return page_message_add( 'Ο σύνδεσμος επαλήθευσης δε βρέθηκε.', 'error' );
-	if ( !password_verify( $_GET['code'], $vlink->hash ) )
+	$vlink = vlink::request( 'vlink_id' );
+	$code = request_var( 'code' );
+	if ( !password_verify( $code, $vlink->hash ) )
 		return page_message_add( 'Ο σύνδεσμος επαλήθευσης δεν είναι σωστός.', 'error' );
 	if ( !is_null( $vlink->act_tm ) )
 		return page_message_add( 'Ο σύνδεσμος επαλήθευσης έχει ακολουθηθεί.', 'error' );
@@ -45,6 +35,6 @@ page_title_set( 'Επαλήθευση' );
 	}
 } )();
 
-page_message_add( sprintf( 'Μετάβαση στην <a href="%s">αρχική σελίδα</a>.', HOME_URL ), 'info' );
+page_message_add( sprintf( 'Μετάβαση στην <a href="%s">αρχική σελίδα</a>.', SITE_URL ), 'info' );
 
 page_html();

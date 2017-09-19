@@ -18,10 +18,18 @@ class team extends entity {
 	public $season_id;   # integer
 	public $on_sunday;   # integer
 
-	public function select_children(): array {
+	public function get_children(): array {
 		global $db;
-		$sql = file_get_contents( SITE_DIR . 'sql/team_children.sql' );
-		$stmt = $db->prepare( $sql );
+		$stmt = $db->prepare( '
+SELECT `xa_child`.*, `xa_grade`.`grade_name`
+FROM `xa_team`
+JOIN `xa_follow` ON `xa_team`.`location_id` = `xa_follow`.`location_id` AND `xa_team`.`season_id` = `xa_follow`.`season_id`
+JOIN `xa_child` ON `xa_child`.`child_id` = `xa_follow`.`child_id`
+JOIN `xa_target` ON `xa_team`.`team_id` = `xa_target`.`team_id` AND `xa_follow`.`grade_id` = `xa_target`.`grade_id`
+JOIN `xa_grade` ON `xa_follow`.`grade_id` = `xa_grade`.`grade_id`
+WHERE `xa_team`.`team_id` = ?
+ORDER BY `xa_child`.`last_name` ASC, `xa_child`.`first_name` ASC, `xa_child`.`child_id` ASC
+		' );
 		$stmt->bind_param( 'i', $this->team_id );
 		$stmt->execute();
 		$rslt = $stmt->get_result();
@@ -33,10 +41,18 @@ class team extends entity {
 		return $items;
 	}
 
-	public function select_events(): array {
+	public function get_events(): array {
 		global $db;
-		$sql = file_get_contents( SITE_DIR . 'sql/team_events.sql' );
-		$stmt = $db->prepare( $sql );
+		$stmt = $db->prepare( '
+SELECT `xa_event`.*
+FROM `xa_team`
+JOIN `xa_target` ON `xa_team`.`team_id` = `xa_target`.`team_id`
+JOIN `xa_participate` ON `xa_team`.`location_id` = `xa_participate`.`location_id`
+JOIN `xa_event` ON `xa_event`.`event_id` = `xa_participate`.`event_id` AND `xa_event`.`season_id` = `xa_team`.`season_id`
+JOIN `xa_regard` ON `xa_regard`.`grade_id` = `xa_target`.`grade_id` AND `xa_regard`.`event_id` = `xa_event`.`event_id`
+WHERE `xa_team`.`team_id` = ?
+ORDER BY `xa_event`.`date` ASC, `xa_event`.`event_id` ASC;
+		' );
 		$stmt->bind_param( 'i', $this->team_id );
 		$stmt->execute();
 		$rslt = $stmt->get_result();
@@ -48,9 +64,48 @@ class team extends entity {
 		return $items;
 	}
 
-	public function select_presences(): array {
+	public function get_grades(): array {
 		global $db;
-		$sql = file_get_contents( SITE_DIR . 'sql/team_presences.sql' );
+		$stmt = $db->prepare( '
+SELECT `xa_grade`.*
+FROM `xa_grade`
+JOIN `xa_target` ON `xa_grade`.`grade_id` = `xa_target`.`grade_id`
+WHERE `xa_target`.`team_id` = ?
+ORDER BY `xa_grade`.`grade_id` ASC
+		' );
+		$stmt->bind_param( 'i', $this->team_id );
+		$stmt->execute();
+		$rslt = $stmt->get_result();
+		$stmt->close();
+		$items = [];
+		while ( !is_null( $item = $rslt->fetch_object( 'grade' ) ) )
+			$items[ $item->grade_id ] = $item;
+		$rslt->free();
+		return $items;
+	}
+
+	public function get_presences( string $mode ): array {
+		global $db;
+		$sql = '
+SELECT `xa_child`.`child_id`, `xa_event`.`event_id`, `xa_presence`.`child_id` IS NOT NULL AS `check`
+FROM `xa_team`
+JOIN `xa_follow` ON `xa_team`.`location_id` = `xa_follow`.`location_id` AND `xa_team`.`season_id` = `xa_follow`.`season_id`
+JOIN `xa_child` ON `xa_child`.`child_id` = `xa_follow`.`child_id`
+JOIN `xa_target` ON `xa_team`.`team_id` = `xa_target`.`team_id` AND `xa_follow`.`grade_id` = `xa_target`.`grade_id`
+JOIN `xa_participate` ON `xa_team`.`location_id` = `xa_participate`.`location_id`
+JOIN `xa_event` ON `xa_event`.`event_id` = `xa_participate`.`event_id` AND `xa_event`.`season_id` = `xa_team`.`season_id`
+JOIN `xa_regard` ON `xa_regard`.`grade_id` = `xa_follow`.`grade_id` AND `xa_regard`.`event_id` = `xa_event`.`event_id`
+LEFT JOIN `xa_presence` ON `xa_child`.`child_id` = `xa_presence`.`child_id` AND `xa_event`.`event_id` = `xa_presence`.`event_id`
+WHERE `xa_team`.`team_id` = ?
+		';
+		if ( $mode === 'desktop' )
+			$sql .= '
+ORDER BY `xa_child`.`last_name` ASC, `xa_child`.`first_name` ASC, `xa_child`.`child_id` ASC, `xa_event`.`date` ASC, `xa_event`.`event_id` ASC
+			';
+		elseif ( $mode === 'mobile' )
+			$sql .= '
+ORDER BY `xa_event`.`date` DESC, `xa_event`.`event_id` DESC, `xa_child`.`last_name` ASC, `xa_child`.`first_name` ASC, `xa_child`.`child_id` ASC
+			';
 		$stmt = $db->prepare( $sql );
 		$stmt->bind_param( 'i', $this->team_id );
 		$stmt->execute();
@@ -65,8 +120,13 @@ class team extends entity {
 
 	public function has_child( int $child_id ): bool {
 		global $db;
-		$sql = file_get_contents( SITE_DIR . 'sql/team_child.sql' );
-		$stmt = $db->prepare( $sql );
+		$stmt = $db->prepare( '
+SELECT `xa_team`.`team_id`
+FROM `xa_team`
+JOIN `xa_follow` ON `xa_team`.`location_id` = `xa_follow`.`location_id` AND `xa_team`.`season_id` = `xa_follow`.`season_id`
+JOIN `xa_target` ON `xa_team`.`team_id` = `xa_target`.`team_id` AND `xa_follow`.`grade_id` = `xa_target`.`grade_id`
+WHERE `xa_team`.`team_id` = ? AND `xa_follow`.`child_id` = ?
+		' );
 		$stmt->bind_param( 'ii', $this->team_id, $child_id );
 		$stmt->execute();
 		$rslt = $stmt->get_result();
@@ -78,8 +138,15 @@ class team extends entity {
 
 	public function has_event( int $event_id ): bool {
 		global $db;
-		$sql = file_get_contents( SITE_DIR . 'sql/team_event.sql' );
-		$stmt = $db->prepare( $sql );
+		$stmt = $db->prepare( '
+SELECT `xa_team`.`team_id`
+FROM `xa_team`
+JOIN `xa_target` ON `xa_team`.`team_id` = `xa_target`.`team_id`
+JOIN `xa_participate` ON `xa_team`.`location_id` = `xa_participate`.`location_id`
+JOIN `xa_event` ON `xa_event`.`event_id` = `xa_participate`.`event_id` AND `xa_event`.`season_id` = `xa_team`.`season_id`
+JOIN `xa_regard` ON `xa_regard`.`grade_id` = `xa_target`.`grade_id` AND `xa_regard`.`event_id` = `xa_event`.`event_id`
+WHERE `xa_team`.`team_id` = ? AND `xa_event`.`event_id` = ?
+		' );
 		$stmt->bind_param( 'ii', $this->team_id, $event_id );
 		$stmt->execute();
 		$rslt = $stmt->get_result();
@@ -89,13 +156,3 @@ class team extends entity {
 		return $value;
 	}
 }
-
-/*
-define( 'TEAM_VIEW', '(
-SELECT `xa_location`.`location_id`, `xa_location`.`location_name`, `xa_team`.`on_sunday`, `xa_location`.`is_swarm`, `xa_team`.`team_id`, `xa_team`.`team_name`, `xa_team`.`season_id`, MIN( `xa_target`.`grade_id` ) as `rank`
-FROM `xa_team`
-JOIN `xa_location` ON `xa_location`.`location_id` = `xa_team`.`location_id`
-JOIN `xa_target` ON `xa_team`.`team_id` = `xa_target`.`team_id`
-GROUP BY `xa_team`.`team_id`
-) AS `xa_team_view`' );
-*/
