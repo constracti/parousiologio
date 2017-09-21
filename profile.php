@@ -1,13 +1,9 @@
 <?php
 
-require_once 'php/page.php';
+require_once 'php/core.php';
 
-if ( is_null( $cuser ) ) {
-	header( 'location: ' . SITE_URL );
-	exit;
-}
+privilege( user::ROLE_GUEST );
 
-$field_success = TRUE;
 $fields = [
 	'last_name' => new field( 'last_name', [
 		'placeholder' => 'επώνυμο',
@@ -19,15 +15,14 @@ $fields = [
 	] ),
 ];
 
-$field_success && ( function( array $fields ) {
-	global $cuser;
-	if ( $_SERVER['REQUEST_METHOD'] !== 'POST' )
-		return;
-	$cuser->last_name = $fields['last_name']->value();
-	$cuser->first_name = $fields['first_name']->value();
+if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
+	$cuser->last_name = $fields['last_name']->post();
+	$cuser->first_name = $fields['first_name']->post();
 	$cuser->update();
-	return page_message_add( 'Το προφίλ ενημερώθηκε.', 'success' );
-} )( $fields );
+	success( [
+		'alert' => 'Το προφίλ ενημερώθηκε.',
+	] );
+}
 
 page_title_set( 'Προφίλ' );
 
@@ -40,7 +35,7 @@ page_nav_add( function() {
 <?php
 } );
 
-page_body_add( 'form_html', $fields, [
+page_body_add( 'form_section', $fields, [
 	'responsive' => 'w3-col m6 s12',
 ] );
 

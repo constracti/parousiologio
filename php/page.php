@@ -1,12 +1,21 @@
 <?php
 
-require_once 'core.php';
 require_once 'panel.php';
-require_once 'field.php';
+require_once 'table.php';
 
+function failure( string $error = '', ...$args ) {
+	global $errors;
+	page_title_set( 'Σφάλμα' );
+	if ( array_key_exists( $error, $errors ) )
+		$html = sprintf( $errors[ $error ], ...$args );
+	else
+		$html = $error;
+	page_message_add( $html, 'error' );
+	page_html();
+}
 
-function failure() {
-	header( 'location: ' . SITE_URL );
+function redirect( string $url = SITE_URL ) {
+	header( 'location: ' . $url );
 	exit;
 }
 
@@ -15,7 +24,7 @@ function failure() {
  * page title *
  **************/
 
-$page_title = SITE_NAME;
+$page_title = NULL;
 
 function page_title_set( string $title ) {
 	global $page_title;
@@ -59,49 +68,96 @@ page_script_add( 'https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.
 
 $page_navs = [];
 
-function page_nav_add( callable $function ) {
+function page_nav_add( callable $function, ...$arguments ) {
 	global $page_navs;
-	$page_navs[] = $function;
+	$page_navs[] = [
+		'function'  => $function,
+		'arguments' => $arguments,
+	];
 }
 
 page_nav_add( function() {
 ?>
-			<a class="w3-bar-item w3-button w3-right" href="https://agonistes.gr/" target="_blank" title="Χαρούμενοι Αγωνιστές - Χαρούμενες Αγωνίστριες">
-				<span class="fa fa-globe"></span>
-			</a>
+<a class="w3-bar-item w3-button" href="<?= season_href() ?>" title="αρχική">
+	<img src="<?= SITE_URL ?>favicon-256.png" style="height: 24px; width: auto; margin: -4px 0px;" />
+	<span class="w3-hide-small"><?= SITE_NAME ?></span>
+</a>
 <?php
 } );
 
-# TODO maybe logout or chmail actions will be invoked afterwards
-if ( !is_null( $cuser ) )
-	page_nav_add( function() {
-		global $cuser;
-		$hash = md5( $cuser->email_address );
-		$gravatar = sprintf( 'https://www.gravatar.com/avatar/%s?size=24&default=mm', $hash );
+page_nav_add( function() {
 ?>
-			<div class="w3-dropdown-hover w3-right">
-				<button class="w3-button" title="<?= $cuser->email_address ?>">
-					<img class="w3-circle" src="<?= $gravatar ?>" style="height: 24px; width: auto; margin: -4px 0px;" />
-					<span class="w3-hide-small"><?= $cuser->email_address ?></span>
-					<span class="fa fa-caret-down"></span>
-				</button>
-				<div class="w3-dropdown-content w3-bar-block w3-theme-l2" style="min-width: initial;">
-					<a class="w3-bar-item w3-button" href="<?= SITE_URL ?>profile.php" title="προφίλ">
-						<span class="fa fa-pencil"></span>
-						<span class="w3-hide-small">προφίλ</span>
-					</a>
-					<a class="w3-bar-item w3-button" href="<?= SITE_URL ?>settings.php" title="ρυθμίσεις">
-						<span class="fa fa-cog"></span>
-						<span class="w3-hide-small">ρυθμίσεις</span>
-					</a>
-					<a class="w3-bar-item w3-button" href="<?= SITE_URL ?>logout.php" title="έξοδος">
-						<span class="fa fa-sign-out"></span>
-						<span class="w3-hide-small">έξοδος</span>
-					</a>
-				</div>
-			</div>
+<div class="w3-dropdown-hover w3-right">
+	<button class="w3-button" title="σύνδεσμοι">
+		<span class="fa fa-external-link"></span>
+		<span class="w3-hide-small w3-hide-medium">σύνδεσμοι</span>
+		<span class="fa fa-caret-down"></span>
+	</button>
+	<div class="w3-dropdown-content w3-bar-block w3-theme-l2">
+		<a class="w3-bar-item w3-button" href="https://agonistes.gr/" target="_blank" title="Χαρούμενοι Αγωνιστές">
+			<img src="<?= SITE_URL ?>img/agonistes.png" style="margin: 0px;" />
+			<span>Χαρούμενοι Αγωνιστές</span>
+		</a>
+		<a class="w3-bar-item w3-button" href="https://synathlountes.agonistes.gr/" target="_blank" title="Συναθλούντες">
+			<img src="<?= SITE_URL ?>img/synathlountes.png" style="margin: 0px;" />
+			<span>Συναθλούντες</span>
+		</a>
+	</div>
+</div>
 <?php
-	} );
+} );
+
+page_nav_add( function() {
+	global $cuser;
+	if ( is_null( $cuser ) || $cuser->role_id < user::ROLE_ADMIN )
+		return;
+?>
+<div class="w3-dropdown-hover w3-right">
+	<button class="w3-button" title="διαχείριση">
+		<span class="fa fa-star"></span>
+		<span class="w3-hide-small w3-hide-medium">διαχείριση</span>
+		<span class="fa fa-caret-down"></span>
+	</button>
+	<div class="w3-dropdown-content w3-bar-block w3-theme-l2">
+		<a class="w3-bar-item w3-button" href="<?= season_href( 'events.php' ) ?>" title="συμβάντα">
+			<span class="fa fa-calendar-check-o"></span>
+			<span>συμβάντα</span>
+		</a>
+	</div>
+</div>
+<?php
+} );
+
+page_nav_add( function() {
+	global $cuser;
+	if ( is_null( $cuser ) )
+		return;
+	$hash = md5( $cuser->email_address );
+	$gravatar = sprintf( 'https://www.gravatar.com/avatar/%s?size=24&default=mm', $hash );
+?>
+<div class="w3-dropdown-hover w3-right">
+	<button class="w3-button" title="<?= $cuser->email_address ?>">
+		<img class="w3-circle" src="<?= $gravatar ?>" style="height: 24px; width: auto; margin: -4px 0px;" />
+		<span class="w3-hide-small w3-hide-medium"><?= $cuser->email_address ?></span>
+		<span class="fa fa-caret-down"></span>
+	</button>
+	<div class="w3-dropdown-content w3-bar-block w3-theme-l2">
+		<a class="w3-bar-item w3-button" href="<?= SITE_URL ?>profile.php" title="προφίλ">
+			<span class="fa fa-pencil"></span>
+			<span>προφίλ</span>
+		</a>
+		<a class="w3-bar-item w3-button" href="<?= SITE_URL ?>settings.php" title="ρυθμίσεις">
+			<span class="fa fa-cog"></span>
+			<span>ρυθμίσεις</span>
+		</a>
+		<a class="w3-bar-item w3-button" href="<?= SITE_URL ?>logout.php" title="έξοδος">
+			<span class="fa fa-sign-out"></span>
+			<span>έξοδος</span>
+		</a>
+	</div>
+</div>
+<?php
+} );
 
 
 /*****************
@@ -148,7 +204,7 @@ function page_body_add( callable $function, ...$arguments ) {
 	];
 }
 
-function form_html( array $fields, array $arguments = [] ) {
+function form_section( array $fields, array $arguments = [] ) {
 	if ( !array_key_exists( 'full_screen', $arguments ) )
 		$arguments['full_screen'] = FALSE;
 	if ( !array_key_exists( 'responsive', $arguments ) )
@@ -161,7 +217,7 @@ function form_html( array $fields, array $arguments = [] ) {
 		echo '<section class="w3-panel">' . "\n";
 	else
 		echo '<section class="w3-panel w3-content">' . "\n";
-	echo '<form class="w3-card-4 w3-round w3-theme-l4" method="post">' . "\n";
+	echo '<form class="form-ajax w3-card-4 w3-round w3-theme-l4" autocomplete="off" method="post">' . "\n";
 	if ( array_key_exists( 'header', $arguments ) ) {
 		echo '<div class="w3-container">' . "\n";
 		echo $arguments['header'];
@@ -181,12 +237,11 @@ function form_html( array $fields, array $arguments = [] ) {
 	echo sprintf( '<span>%s</span>', $arguments['submit_text'] ) . "\n";
 	echo '</button>' . "\n";
 	if ( array_key_exists( 'delete', $arguments ) ) {
-		echo sprintf( '<a class="w3-button w3-round w3-theme w3-right" href="%s" onclick="return confirm( \'οριστική διαγραφή;\' );">', $arguments['delete'] ) . "\n";
+		echo sprintf( '<a class="w3-button w3-round w3-theme w3-right link-ajax" href="%s" data-confirm="οριστική διαγραφή;">', $arguments['delete'] ) . "\n";
 		echo '<span class="fa fa-trash"></span>' . "\n";
 		echo '<span>διαγραφή</span>' . "\n";
 		echo '</a>' . "\n";
 	}
-		echo $arguments['secondary'];
 	echo '</div>' . "\n";
 	echo '</div>' . "\n";
 	if ( array_key_exists( 'footer', $arguments ) ) {
@@ -196,78 +251,96 @@ function form_html( array $fields, array $arguments = [] ) {
 	}
 	echo '</form>' . "\n";
 	echo '</section>' . "\n";
-}
-
-
-/**********
- * season *
- **********/
-
-function season_dropdown() {
-	global $cyear;
-	global $lyear;
-	$class = 'w3-button';
-	if ( $lyear !== $cyear )
-		$class .= ' w3-theme-d2';
 ?>
-			<div class="w3-dropdown-hover">
-				<button class="<?= $class ?>" title="<?= $cyear ?>">
-					<span class="fa fa-calendar"></span>
-					<span><?= $cyear ?></span>
-					<span class="fa fa-caret-down"></span>
-				</button>
-				<div class="w3-dropdown-content w3-bar-block w3-theme-l2" style="min-width: initial;">
-<?php
-	foreach ( season::select( [], [ 'year' => 'DESC' ] ) as $season ) {
-		$class = 'w3-bar-item w3-button';
-		$href = SITE_URL;
-		if ( $season->year !== $lyear )
-			$href .= '?year=' . $season->year;
-		if ( $season->year === $cyear )
-			$class .= ' w3-theme-l1';
-?>
-					<a class="<?= $class ?>" href="<?= $href ?>" title="<?= $season->year ?>">
-						<span><?= $season->year ?></span>
-						<span class="w3-hide-small">-</span>
-						<span class="w3-hide-small"><?= $season->slogan_old ?></span>
-					</a>
-<?php
-	}
-?>
-				</div>
-			</div>
-<?php
-}
+<script>
+$( function() {
 
-function season_home(): string {
-	global $cyear;
-	global $lyear;
-	$href = SITE_URL;
-	if ( $cyear !== $lyear )
-		$href .= '?year=' . $cyear;
-	return $href;
-}
-
-$cyear = NULL;
-$lyear = season::select_last();
-if ( !is_null( $lyear ) ) {
-	$lyear = $lyear->year;
-	$cyear = ( function() {
-		$year = request_year( 'year', TRUE );
-		if ( !is_null( $year ) ) {
-			$season = season::select_by( 'year', $year );
-			if ( is_null( $season ) )
-				failure();
-			return $season->year;
+$( '.form-ajax' ).submit( function() {
+	var form = $( this );
+	var btn = form.find( 'button[type="submit"]' );
+	if ( btn.prop( 'disabled' ) )
+		return false;
+	btn.prop( 'disabled', true );
+	var fa = btn.children( '.fa' );
+	var cl = fa.prop( 'class' );
+	fa.prop( 'class', 'fa fa-spinner fa-pulse' );
+	$.post( form.prop( 'action' ), form.serialize() ).done( function( data ) {
+		if ( typeof( data ) === 'object' ) {
+			if ( data.hasOwnProperty( 'alert' ) )
+				alert( data.alert );
+			if ( data.hasOwnProperty( 'location' ) )
+				location.href = data.location;
+		} else {
+			alert( data );
 		}
-		$team = team::request( 'team_id', TRUE );
-		if ( !is_null( $team ) ) {
-			$season = season::select_by( 'season_id', $team->season_id );
-			return $season->year;
-		}
-		return NULL;
-	} )() ?? $lyear;
+	} ).fail( function( jqXHR ) {
+		alert( jqXHR.statusText + ' ' + jqXHR.status );
+	} ).always( function() {
+		fa.prop( 'class', cl );
+		btn.prop( 'disabled', false );
+	} );
+	return false;
+} );
+
+} );
+</script>
+<?php
 }
+
+page_body_add( function() {
+?>
+<style>
+.link {
+	white-space: nowrap;
+	text-decoration: none;
+	color: Blue;
+}
+.link:hover {
+	color: DarkBlue;
+}
+
+.link-delete {
+	color: Red;
+}
+.link-delete:hover {
+	color: DarkRed;
+}
+</style>
+<script>
+$( function() {
+
+$( '.link-ajax' ).click( function() {
+	var link = $( this );
+	var fa = link.find( '.fa' );
+	if ( fa.hasClass( 'fa-spinner' ) )
+		return false;
+	if ( link.data( 'confirm' ) !== undefined && !confirm( link.data( 'confirm' ) ) )
+		return false;
+	var cl = fa.prop( 'class' );
+	fa.prop( 'class', 'fa fa-spinner fa-pulse' );
+	$.post( link.prop( 'href' ), function( data ) {
+		if ( typeof( data ) === 'object' ) {
+			if ( data.hasOwnProperty( 'alert' ) )
+				alert( data.alert );
+			if ( data.hasOwnProperty( 'location' ) )
+				location.href = data.location;
+			if ( link.data( 'remove' ) !== undefined )
+				link.parents( link.data( 'remove' ) ).remove();
+		} else {
+			alert( data );
+		}
+	} ).fail( function( jqXHR ) {
+		alert( jqXHR.statusText + ' ' + jqXHR.status );
+	} ).always( function() {
+		fa.prop( 'class', cl );
+	} );
+	return false;
+} );
+
+} );
+</script>
+<?php
+} );
 
 
 /*************
@@ -291,7 +364,7 @@ function page_html() {
 		<meta name="author" content="constracti" />
 		<meta name="description" content="Παρουσιολόγιο Χαρούμενων Αγωνιστών Αθήνας" />
 		<meta name="keywords" content="παρουσίες, παρουσίες χα, παρουσιολόγιο, χαρούμενοι αγωνιστές, χαρούμενοι, αγωνιστές, παρουσιολόγιο χαρούμενων αγωνιστών, παρουσιολόγιο χα, χα, parousies, parousies xa, parousiologio, xaroumenoi agonistes, xaroumenoi, agonistes, parousiologio xaroumenon agoniston, parousiologio xa, xa" />
-		<title><?= $page_title ?></title>
+		<title><?= $page_title ?? SITE_NAME ?></title>
 		<link rel="icon" href="<?= SITE_URL ?>favicon-256.png" />
 <?php
 	foreach ( $page_styles as $style ) {
@@ -299,6 +372,31 @@ function page_html() {
 		<link rel="stylesheet" href="<?= $style ?>" />
 <?php
 	}
+?>
+		<style>
+body>.w3-bar:first-child {
+	overflow: initial;
+}
+body>.w3-bar:first-child>.w3-dropdown-hover {
+	position: relative;
+}
+body>.w3-bar:first-child>.w3-dropdown-hover>.w3-dropdown-content {
+	min-width: initial;
+	position: absolute;
+}
+body>.w3-bar:first-child>.w3-dropdown-hover>.w3-dropdown-content>.w3-bar-item {
+	white-space: nowrap;
+}
+body>.w3-bar:first-child>.w3-dropdown-hover.w3-right>.w3-dropdown-content {
+	right: 0px;
+}
+.action {
+	position: fixed;
+	right: 50px;
+	bottom: 50px;
+}
+		</style>
+<?php
 	foreach ( $page_scripts as $script ) {
 ?>
 		<script src="<?= $script ?>"></script>
@@ -308,16 +406,12 @@ function page_html() {
 	</head>
 	<body class="w3-theme-l5">
 		<div class="w3-bar w3-theme">
-			<a class="w3-bar-item w3-button" href="<?= season_home() ?>" title="αρχική σελίδα">
-				<img src="<?= SITE_URL ?>favicon-256.png" style="height: 24px; width: auto; margin: -4px 0px;" />
-				<span class="w3-hide-small"><?= SITE_NAME ?></span>
-			</a>
 <?php
 	foreach ( $page_navs as $nav )
-		$nav();
+		$nav['function']( ...$nav['arguments'] );
 ?>
 		</div>
-		<h1 class="w3-panel w3-content w3-text-theme w3-center"><?= $page_title ?></h1>
+		<h1 class="w3-panel w3-content w3-text-theme w3-center"><?= $page_title ?? SITE_NAME ?></h1>
 <?php
 	if ( !is_null( $cuser ) && ( is_null( $cuser->last_name ) || is_null( $cuser->first_name ) ) )
 		page_message_add( sprintf( 'Συμπλήρωσε τα στοιχεία σου στο <a href="%sprofile.php">προφίλ</a>.', SITE_URL ), 'warning' );
@@ -336,4 +430,5 @@ function page_html() {
 	</body>
 </html>
 <?php
+	exit;
 }

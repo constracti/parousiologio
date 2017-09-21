@@ -1,6 +1,6 @@
 <?php
 
-require_once 'php/page.php';
+require_once 'php/core.php';
 
 page_title_set( 'Επαλήθευση' );
 
@@ -19,8 +19,9 @@ page_title_set( 'Επαλήθευση' );
 		case 'register':
 			$user->role_id = user::ROLE_GUEST;
 			$user->update();
+			$user->inform();
 			page_message_add( 'Η εγγραφή σου ολοκληρώθηκε επιτυχώς. Μπορείς πλέον να συνδεθείς.', 'success' );
-			# TODO inform admin
+			user::clear_by_email_address( $user->email_address );
 			break;
 		case 'repass':
 			$user->password_hash = $vlink->data;
@@ -31,6 +32,7 @@ page_title_set( 'Επαλήθευση' );
 			$user->email_address = $vlink->data;
 			$user->update();
 			page_message_add( 'Η διεύθυνση email του λογαριασμού άλλαξε επιτυχώς.', 'success' );
+			user::clear_by_email_address( $user->email_address );
 			break;
 	}
 } )();

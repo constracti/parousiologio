@@ -1,27 +1,26 @@
 <?php
 
-require_once 'php/page.php';
+require_once 'php/core.php';
 
-if ( is_null( $cuser ) )
-	failure();
+privilege( user::ROLE_BASIC );
 
 $mode = request_var( 'mode' );
 if ( !in_array( $mode, [ 'desktop', 'mobile' ] ) )
-	failure();
+	failure( 'argument_not_valid', 'mode' );
 
 $team = team::request( 'team_id' );
 if ( !$cuser->has_team( $team->team_id ) )
-	failure();
+	failure( 'argument_not_valid', 'team_id' );
 
 $child = child::request( 'child_id' );
 if ( !$team->has_child( $child->child_id ) )
-	failure();
+	failure( 'argument_not_valid', 'child_id' );
 
-$follow = follow::select( [
+$follows = follow::select( [
 	'child_id' => $child->child_id,
 	'season_id' => $team->season_id,
 ] );
-$follow = array_values( $follow )[ 0 ];
+$follow = array_shift( $follows );
 
 $grades = ( function( $grades ) {
 	$options = [];
@@ -30,7 +29,6 @@ $grades = ( function( $grades ) {
 	return $options;
 } ) ( $team->get_grades() );
 
-$field_success = TRUE;
 $fields = [
 	'last_name' => new field( 'last_name', [
 		'placeholder' => 'επώνυμο',
@@ -114,34 +112,32 @@ $fields = [
 	] ),
 ];
 
-$field_success && ( function( array $fields ) {
-	global $child;
-	global $follow;
-	if ( $_SERVER['REQUEST_METHOD'] !== 'POST' )
-		return;
-	$child->last_name = $fields['last_name']->value();
-	$child->first_name = $fields['first_name']->value();
-	$child->home_phone = $fields['home_phone']->value();
-	$child->mobile_phone = $fields['mobile_phone']->value();
-	$child->email_address = $fields['email_address']->value();
-	$child->school = $fields['school']->value();
-	$child->birth_year = $fields['birth_year']->value();
-	$child->fath_name = $fields['fath_name']->value();
-	$child->fath_mobile = $fields['fath_mobile']->value();
-	$child->fath_occup = $fields['fath_occup']->value();
-	$child->fath_email = $fields['fath_email']->value();
-	$child->moth_name = $fields['moth_name']->value();
-	$child->moth_mobile = $fields['moth_mobile']->value();
-	$child->moth_occup = $fields['moth_occup']->value();
-	$child->moth_email = $fields['moth_email']->value();
-	$child->address = $fields['address']->value();
-	$child->city = $fields['city']->value();
-	$child->postal_code = $fields['postal_code']->value();
+if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
+	$child->last_name = $fields['last_name']->post();
+	$child->first_name = $fields['first_name']->post();
+	$child->home_phone = $fields['home_phone']->post();
+	$child->mobile_phone = $fields['mobile_phone']->post();
+	$child->email_address = $fields['email_address']->post();
+	$child->school = $fields['school']->post();
+	$child->birth_year = $fields['birth_year']->post();
+	$child->fath_name = $fields['fath_name']->post();
+	$child->fath_mobile = $fields['fath_mobile']->post();
+	$child->fath_occup = $fields['fath_occup']->post();
+	$child->fath_email = $fields['fath_email']->post();
+	$child->moth_name = $fields['moth_name']->post();
+	$child->moth_mobile = $fields['moth_mobile']->post();
+	$child->moth_occup = $fields['moth_occup']->post();
+	$child->moth_email = $fields['moth_email']->post();
+	$child->address = $fields['address']->post();
+	$child->city = $fields['city']->post();
+	$child->postal_code = $fields['postal_code']->post();
 	$child->update();
-	$follow->grade_id = $fields['grade_id']->value();
+	$follow->grade_id = $fields['grade_id']->post();
 	$follow->update();
-	return page_message_add( 'Η εγγραφή παιδιού ενημερώθηκε.', 'success' );
-} )( $fields );
+	success( [
+		'alert' => 'Η εγγραφή παιδιού ενημερώθηκε.',
+	] );
+}
 
 page_title_set( 'Επεξεργασία' );
 
@@ -164,7 +160,7 @@ page_nav_add( function() {
 <?php
 } );
 
-page_body_add( 'form_html', $fields, [
+page_body_add( 'form_section', $fields, [
 	'full_screen' => TRUE,
 	'responsive' => 'w3-col l3 m6 s12',
 	'delete' => sprintf( '%sdelete.php?mode=%s&team_id=%d&child_id=%d', SITE_URL, $mode, $team->team_id, $child->child_id ),

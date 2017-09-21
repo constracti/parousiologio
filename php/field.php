@@ -11,86 +11,44 @@ class field {
 			$atts['type'] = 'text';
 		if ( !array_key_exists( 'required', $atts ) )
 			$atts['required'] = FALSE;
-		if ( !array_key_exists( 'autocomplete', $atts ) )
-			$atts['autocomplete'] = FALSE;
 		elseif ( !array_key_exists( 'value', $atts ) )
 			$atts['value'] = NULL;
 		$this->atts = $atts;
-		if ( $_SERVER['REQUEST_METHOD'] === 'POST' )
-			$this->atts['value'] = $this->post();
 	}
 
 	public function post() {
-		global $field_success;
-		if ( !array_key_exists( $this->name, $_POST ) ) {
-			page_message_add( sprintf( 'Το πεδίο "%s" δεν είναι ορισμένο', $this->atts['placeholder'] ), 'error' );
-			$field_success = FALSE;
+		$var = request_var( $this->name, !$this->atts['required'] );
+		if ( is_null( $var ) )
 			return NULL;
-		}
-		$var = $_POST[ $this->name ];
-		if ( $var === '' ) {
-			if ( $this->atts['required'] ) {
-				page_message_add( sprintf( 'Το πεδίο "%s" είναι κενό.', $this->atts['placeholder'] ), 'error' );
-				$field_success = FALSE;
-			}
-			return NULL;
-		}
 		switch ( $this->atts['type'] ) {
 			case 'text':
-				$var = strip_tags( $var );
-				$var = preg_replace( '/\s+/', ' ', $var );
-				$var = trim( $var );
-				if ( $var === '' ) {
-					if ( $this->atts['required'] ) {
-						page_message_add( sprintf( 'Το πεδίο "%s" είναι κενό.', $this->atts['placeholder'] ), 'error' );
-						$field_success = FALSE;
-					}
-					return NULL;
-				}
+				$var = filter_text( $var );
+				if ( is_null( $var ) && $this->atts['required'] )
+					failure( 'argument_not_defined', $this->name );
 				break;
 			case 'email':
-				$var = filter_var( $var, FILTER_VALIDATE_EMAIL );
-				if ( $var === FALSE ) {
-					page_message_add( sprintf( 'Το πεδίο "%s" δεν έχει έγκυρη μορφή διεύθυνσης email.', $this->atts['placeholder'] ), 'error' );
-					$field_success = FALSE;
-					return NULL;
-				}
+				$var = filter_email( $var );
+				if ( is_null( $var ) )
+					failure( 'argument_not_valid', $this->name );
 				break;
 			case 'number':
-				$options = [];
-				if ( array_key_exists( 'min', $this->atts ) )
-					$options['min_range'] = $this->atts['min'];
-				if ( array_key_exists( 'max', $this->atts ) )
-					$options['max_range'] = $this->atts['max'];
-				$options = [
-					'options' => $options,
-				];
-				$var = filter_var( $var, FILTER_VALIDATE_INT, $options );
-				if ( $var === FALSE ) {
-					page_message_add( sprintf( 'Το πεδίο "%s" δεν έχει έγκυρη μορφή αριθμού.', $this->atts['placeholder'] ), 'error' );
-					$field_success = FALSE;
-					return NULL;
-				}
+				$var = filter_int( $var );
+				if ( is_null( $var ) )
+					failure( 'argument_not_valid', $this->name );
+				if ( array_key_exists( 'min', $this->atts ) && $this->atts['min'] > $var )
+					failure( 'argument_not_valid', $this->name );
+				if ( array_key_exists( 'max', $this->atts ) && $this->atts['max'] < $var )
+					failure( 'argument_not_valid', $this->name );
 				break;
 		}
-		if ( array_key_exists( 'maxlength', $this->atts ) ) {
-			if ( mb_strlen( $var ) > $this->atts['maxlength'] ) {
-				page_message_add( sprintf( 'Το πεδίο "%s" υπερβαίνει τους %d χαρακτήρες.', $this->atts['placeholder'], $this->atts['maxlength'] ), 'error' );
-				$field_success = FALSE;
-				return NULL;
-			}
-		}
+		if ( is_null( $var ) )
+			return NULL;
+		if ( array_key_exists( 'maxlength', $this->atts ) && mb_strlen( $var ) > $this->atts['maxlength'] )
+			failure( 'argument_not_valid', $this->name );
 		if ( array_key_exists( 'pattern', $this->atts ) ) {
-			$var = filter_var( $var, FILTER_VALIDATE_REGEXP, [
-				'options' => [
-					'regexp' => '/^' . $this->atts['pattern'] . '$/',
-				],
-			] );
-			if ( $var === FALSE ) {
-				page_message_add( sprintf( 'Το πεδίο "%s" δεν έχει έγκυρη μορφή.', $this->atts['placeholder'] ), 'error' );
-				$field_success = FALSE;
-				return NULL;
-			}
+			$var = filter_regexp( $var, $this->atts['pattern'] );
+			if ( is_null( $var ) )
+				failure( 'argument_not_valid', $this->name );
 		}
 		return $var;
 	}
@@ -98,22 +56,13 @@ class field {
 	public function attributes() {
 		echo sprintf( ' name="%s"', $this->name );
 		foreach ( $this->atts as $att => $val ) {
-			if ( $att === 'value' ) {
-				if ( $this->atts['type'] === 'password' )
-					continue;
-			}
-			if ( $att === 'autocomplete' ) {
-				$val = $val ? 'on' : 'off';
-			}
 			if ( is_bool( $val ) ) {
-				if ( $val )
-					$val = $att;
-				else
+				if ( !$val )
 					continue;
+				$val = $att;
 			}
-			if ( is_null( $val ) ) {
+			if ( is_null( $val ) )
 				continue;
-			}
 			echo sprintf( ' %s="%s"', $att, $val );
 		}
 	}
@@ -133,10 +82,6 @@ class field {
 		$this->element();
 		echo '</label>' . "\n";
 	}
-
-	public function value() {
-		return $this->atts['value'];
-	}
 }
 
 class field_email extends field {
@@ -144,6 +89,15 @@ class field_email extends field {
 	public function __construct( string $name, array $atts = [] ) {
 		if ( !array_key_exists( 'type', $atts ) )
 			$atts['type'] = 'email';
+		parent::__construct( $name, $atts );
+	}
+}
+
+class field_password extends field {
+
+	public function __construct( string $name, array $atts = [] ) {
+		if ( !array_key_exists( 'type', $atts ) )
+			$atts['type'] = 'password';
 		parent::__construct( $name, $atts );
 	}
 }
@@ -199,16 +153,13 @@ class field_select extends field {
 	}
 
 	public function post() {
-		global $field_success;
 		$var = parent::post();
 		if ( is_null( $var ) )
 			return NULL;
 		foreach ( $this->options as $value => $label )
 			if ( $var === strval( $value ) )
 				return $value;
-		page_message_add( sprintf( 'Το πεδίο "%s" δεν έχει έγκυρη τιμή.', $this->atts['placeholder'] ), 'error' );
-		$field_success = FALSE;
-		return NULL;
+		failure( 'argument_not_valid', $this->name );
 	}
 
 	public function element() {

@@ -1,30 +1,25 @@
 <?php
 
-require_once 'php/page.php';
+require_once 'php/core.php';
 
-if ( is_null( $cuser ) ) {
-	header( 'location: ' . SITE_URL );
-	exit;
-}
+privilege( user::ROLE_GUEST );
 
-$field_success = TRUE;
 $fields = [
-	'password' => new field( 'password', [
-		'type' => 'password',
+	'password' => new field_password( 'password', [
 		'placeholder' => 'καινούριος κωδικός πρόσβασης',
 		'required' => TRUE,
 	] ),
 ];
 
-$field_success && ( function( array $fields ) {
-	global $cuser;
-	if ( $_SERVER['REQUEST_METHOD'] !== 'POST' )
-		return;
-	$password = $fields['password']->value();
+if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
+	$password = $fields['password']->post();
 	$cuser->password_hash = password_hash( $password, PASSWORD_DEFAULT );
 	$cuser->update();
-	return page_message_add( 'Ο κωδικός πρόσβασης άλλαξε.', 'success' );
-} )( $fields );
+	success( [
+		'alert' => 'Ο κωδικός πρόσβασης άλλαξε.',
+		'location' => SITE_URL . 'settings.php',
+	] );
+}
 
 page_title_set( 'Κωδικός πρόσβασης' );
 
@@ -41,6 +36,6 @@ page_nav_add( function() {
 <?php
 } );
 
-page_body_add( 'form_html', $fields );
+page_body_add( 'form_section', $fields );
 
 page_html();

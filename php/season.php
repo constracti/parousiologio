@@ -20,4 +20,12 @@ class season extends entity {
 		$items = self::select( [], [ 'year' => 'DESC' ], 1);
 		return array_shift( $items );
 	}
+
+	public static function select_options(): array {
+		$seasons = season::select( [], [ 'year' => 'DESC' ] );
+		$options = [];
+		foreach ( $seasons as $season )
+			$options[ $season->season_id ] = sprintf( '%d: %s', $season->year, $season->slogan_old );
+		return $options;
+	}
 }

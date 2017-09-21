@@ -1,12 +1,9 @@
 <?php
 
-# TODO delete unverified accounts with same name email upon verification
-
-require_once 'php/page.php';
+require_once 'php/core.php';
 
 logout();
 
-$field_success = TRUE;
 $fields = [
 	'last_name' => new field( 'last_name', [
 		'placeholder' => 'επώνυμο',
@@ -16,32 +13,24 @@ $fields = [
 		'placeholder' => 'όνομα',
 		'value' => $cuser->first_name,
 	] ),
-	'email_address' => new field( 'email_address', [
-		'type' => 'email',
+	'email_address' => new field_email( 'email_address', [
 		'placeholder' => 'διεύθυνση email',
 		'required' => TRUE,
 	] ),
-	'password' => new field( 'password', [
-		'type' => 'password',
+	'password' => new field_password( 'password', [
 		'placeholder' => 'κωδικός πρόσβασης',
 		'required' => TRUE,
 	] ),
 ];
 
-$field_success && ( function( array $fields ) {
-	if ( $_SERVER['REQUEST_METHOD'] !== 'POST' )
-		return;
-	$last_name = $fields['last_name']->value();
-	$first_name = $fields['first_name']->value();
-	$email_address = $fields['email_address']->value();
-	$password = $fields['password']->value();
-	$user = user::select_by( 'email_address', $email_address );
-	if ( !is_null( $user ) ) {
-		if ( $user->role_id === user::ROLE_UNVER )
-			$user->delete();
-		else
-			return page_message_add( 'Χρησιμοποίησε μία διαφορετική διεύθυνση email.', 'error' );
-	}
+if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
+	$last_name = $fields['last_name']->post();
+	$first_name = $fields['first_name']->post();
+	$email_address = $fields['email_address']->post();
+	$password = $fields['password']->post();
+	$user = user::select_by_email_address( $email_address );
+	if ( !is_null( $user ) )
+		failure( 'Χρησιμοποίησε μία διαφορετική διεύθυνση email.' );
 	$user = new user();
 	$user->email_address = $email_address;
 	$user->password_hash = password_hash( $password, PASSWORD_DEFAULT );
@@ -63,12 +52,15 @@ $field_success && ( function( array $fields ) {
 		'<p><small>Αν η ενέργεια δεν προήλθε από εσένα, αγνόησε το παρόν μήνυμα.</small></p>',
 	] ) );
 	$mail->send();
-	return page_message_add( 'Ακολούθησε το σύνδεσμο που εστάλη στα εισερχόμενά σου για να ολοκληρώσεις την εγγραφή σου.', 'success' );
-} )( $fields );
+	success( [
+		'alert' => 'Ακολούθησε το σύνδεσμο που εστάλη στα εισερχόμενά σου για να ολοκληρώσεις την εγγραφή σου.',
+		'location' => SITE_URL,
+	] );
+}
 
 page_title_set( 'Εγγραφή' );
 
-page_body_add( 'form_html', $fields, [
+page_body_add( 'form_section', $fields, [
 	'responsive' => 'w3-col m6 s12',
 	'submit_icon' => 'fa-power-off',
 	'submit_text' => 'εγγραφή',

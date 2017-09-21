@@ -1,0 +1,56 @@
+.xa-table {
+	border-collapse: collapse;
+	width: 100%;
+}
+.xa-table th, .xa-table td {
+	padding: 8px;
+	text-align: left;
+	vertical-align: top;
+}
+.xa-table th {
+	white-space: nowrap;
+}
+.xa-table td:first-child>:last-child {
+	display: none;
+	cursor: pointer;
+	position: absolute;
+	top: 8px;
+	right: 8px;
+}
+
+
+@media (max-width:992px) {
+
+.xa-table th:not(:first-child) {
+	display: none;
+}
+.xa-table th:first-child, .xa-table td {
+	display: block;
+}
+.xa-table tr.xa-table-hidden>td:not(:first-child) {
+	display: none;
+}
+.xa-table td:first-child>:last-child {
+	display: block;
+}
+
+.xa-table td {
+	position: relative;
+}
+.xa-table td:first-child {
+	padding-right: 24px;
+}
+.xa-table td:not(:first-child) {
+	padding-left: 120px;
+}
+.xa-table td:not(:first-child)::before {
+	content: attr(data-colname);
+	position: absolute;
+	left: 8px;
+	width: 112px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+}

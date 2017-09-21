@@ -1,15 +1,12 @@
 <?php
 
-# TODO localize error messages
-
 require_once 'php/core.php';
 
 logout();
 
-if ( !array_key_exists( 'provider', $_GET ) )
-	exit( 'not set provider' );
+$provider = request_var( 'provider' );
 
-switch ( $_GET['provider'] ) {
+switch ( $provider ) {
 	case 'google':
 		require_once COMPOSER_DIR . 'oauth2-google/vendor/autoload.php';
 		$provider = new League\OAuth2\Client\Provider\Google( [
@@ -38,26 +35,16 @@ switch ( $_GET['provider'] ) {
 		$scope = [ 'openid' ];
 		break;
 	default:
-		exit( 'invalid provider' );
+		failure( 'argument_not_valid', 'provider' );
 }
 
-if ( array_key_exists( 'login', $_GET ) ) {
-	$options = [
-		'scope' => $scope,
-	];
-	header( 'location: ' . $provider->getAuthorizationUrl( $options ) );
-	exit;
-} elseif ( array_key_exists( 'code', $_GET ) ) {
+if ( array_key_exists( 'code', $_GET ) ) {
 	$token = $provider->getAccessToken( 'authorization_code', [ 'code' => $_GET['code'] ] );
 	$owner = $provider->getResourceOwner( $token );
 	$email_address = filter_var( $owner->getEmail(), FILTER_VALIDATE_EMAIL );
 	if ( $email_address === FALSE )
-		exit( 'invalid email address' );
-	$user = user::select_by( 'email_address', $email_address );
-	if ( !is_null( $user ) && $user->role_id === user::ROLE_UNVER ) {
-		$user->delete();
-		$user = NULL;
-	}
+		failure( 'Ο πάροχος απάντησε με μη έγκυρη διεύθυνση email.' );
+	$user = user::select_by_email_address( $email_address );
 	if ( is_null( $user ) ) {
 		$user = new user();
 		$user->email_address = $email_address;
@@ -65,11 +52,16 @@ if ( array_key_exists( 'login', $_GET ) ) {
 		$user->reg_time = dtime::php2sql( $_SERVER['REQUEST_TIME'] );
 		$user->reg_ip = $_SERVER['REMOTE_ADDR'];
 		$user->insert();
-		# TODO inform admin
+		$user->inform();
+		user::clear_by_email_address();
 	}
 	epoint::write( $user->user_id );
+	redirect();
 } elseif ( array_key_exists( 'error', $_GET ) ) {
-	exit( 'authentication: ' . $_GET['error'] );
+	failure( sprintf( 'Η αυθεντικοποίηση δεν ήταν επιτυχής.<br /><code>%s</code>', $_GET['error'] ) );
 } else {
-	exit( 'invalid page call' );
+	$options = [
+		'scope' => $scope,
+	];
+	redirect( $provider->getAuthorizationUrl( $options ) );
 }

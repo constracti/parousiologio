@@ -57,7 +57,7 @@ abstract class entity {
 		else
 			$limit = sprintf( ' LIMIT %d', $limit );
 		// QUERY
-		$sql = sprintf( 'SELECT %s FROM `xa_%s`', $props, $class ) . $where . $orderby . $limit . ';';
+		$sql = sprintf( 'SELECT %s FROM `xa_%s`', $props, $class ) . $where . $orderby . $limit;
 		$stmt = $db->prepare( $sql );
 		if ( !empty( $values ) )
 			$stmt->bind_param( $types, ...$values );
@@ -98,7 +98,7 @@ abstract class entity {
 		$props = implode( ', ', $props );
 		$marks = implode( ', ', $marks );
 		$types = implode( $types );
-		$sql = sprintf( 'INSERT INTO `xa_%s` ( %s ) VALUES ( %s );', $class, $props, $marks );
+		$sql = sprintf( 'INSERT INTO `xa_%s` ( %s ) VALUES ( %s )', $class, $props, $marks );
 		$stmt = $db->prepare( $sql );
 		$stmt->bind_param( $types, ...$values );
 		$stmt->execute();
@@ -127,7 +127,7 @@ abstract class entity {
 		$values[] = $this->$id;
 		$set = implode( ', ', $set );
 		$types = implode( $types );
-		$sql = sprintf( 'UPDATE `xa_%s` SET %s WHERE `%s` = ?;', $class, $set, $id );
+		$sql = sprintf( 'UPDATE `xa_%s` SET %s WHERE `%s` = ?', $class, $set, $id );
 		$stmt = $db->prepare( $sql );
 		$stmt->bind_param( $types, ...$values );
 		$stmt->execute();
@@ -145,7 +145,7 @@ abstract class entity {
 				break;
 			}
 		}
-		$sql = sprintf( 'DELETE FROM `xa_%s` WHERE `%s` = ?;', $class, $id );
+		$sql = sprintf( 'DELETE FROM `xa_%s` WHERE `%s` = ?', $class, $id );
 		$stmt = $db->prepare( $sql );
 		$stmt->bind_param( $fields[ $id ], $this->$id );
 		$stmt->execute();
@@ -170,6 +170,6 @@ abstract class entity {
 			return $var;
 		if ( $nullable )
 			return NULL;
-		failure();
+		failure( 'argument_not_valid', $key );
 	}
 }

@@ -1,28 +1,24 @@
 <?php
 
-if ( $_SERVER['REQUEST_METHOD'] === 'POST' )
-	require_once 'php/ajax.php';
-else
-	require_once 'php/page.php';
+require_once 'php/core.php';
 
-if ( is_null( $cuser ) )
-	failure();
+privilege( user::ROLE_BASIC );
 
 $mode = request_var( 'mode' );
 if ( !in_array( $mode, [ 'desktop', 'mobile' ] ) )
-	failure();
+	failure( 'argument_not_valid', 'mode' );
 
 $team = team::request( 'team_id' );
 if ( !$cuser->has_team( $team->team_id ) )
-	failure();
+	failure( 'argument_not_valid', 'team_id' );
 
 if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
 	$child = child::request( 'child_id' );
 	if ( !$team->has_child( $child->child_id ) )
-		failure();
+		failure( 'argument_not_valid', 'child_id' );
 	$event = event::request( 'event_id' );
 	if ( !$team->has_event( $event->event_id ) )
-		failure();
+		failure( 'argument_not_valid', 'event_id' );
 	$check = request_var( 'check' ) === 'on';
 	if ( $check )
 		$child->insert_event( $event->event_id );
@@ -44,10 +40,10 @@ page_nav_add( function() {
 	global $mode;
 	global $team;
 ?>
-			<a class="w3-bar-item w3-button" href="<?= SITE_URL ?>presences.php?mode=<?= $mode ?>&team_id=<?= $team->team_id ?>" title="παρουσίες">
-				<span class="fa fa-check-square"></span>
-				<span class="w3-hide-small w3-hide-medium">παρουσίες</span>
-			</a>
+<a class="w3-bar-item w3-button" href="<?= SITE_URL ?>presences.php?mode=<?= $mode ?>&team_id=<?= $team->team_id ?>" title="παρουσίες">
+	<span class="fa fa-check-square"></span>
+	<span class="w3-hide-small w3-hide-medium">παρουσίες</span>
+</a>
 <?php
 } );
 
@@ -98,7 +94,7 @@ table.xa-presences th, table.xa-presences td {
 .xa-presence-child, .xa-presence-total {
 	text-align: right !important;
 }
-	</style><!-- TODO move in CSS -->
+	</style>
 	<table class="xa-presences w3-table w3-striped w3-card-4">
 		<thead class="w3-theme">
 			<tr>
@@ -290,13 +286,17 @@ $( '.xa-event-toggle' ).find( '.fa' ).addClass( 'fa-plus-square-o' ).end().click
 <?php
 }
 
-function presences_actions_html() {
+page_script_add( SITE_URL . 'js/modal.js' );
+
+page_body_add( sprintf( 'presences_%s_body', $mode ) );
+
+page_body_add( function() {
 	global $mode;
 	global $team;
 	global $events;
 	global $properties;
 ?>
-<section style="position: fixed; right: 50px; bottom: 50px;">
+<section class="action">
 	<button class="w3-button w3-circle w3-theme xa-modal-show" data-modal="#xa-modal-view" title="προβολή">
 		<span class="fa fa-eye"></span>
 	</button>
@@ -339,13 +339,25 @@ function presences_actions_html() {
 		</div>
 	</div>
 </section>
+<script>
+$( function() {
+
+$( '.xa-modal-show' ).click( function() {
+	$( $( this ).data( 'modal' ) ).show();
+} );
+
+$( '.xa-modal' ).click( function() {
+	$( this ).hide();
+} ).find( '.w3-modal-content' ).click( function( event ) {
+	event.stopPropagation();
+} ).end().
+find( '.w3-hover-red' ).click( function() {
+	$( this ).parents( '.xa-modal' ).hide();
+} );
+
+} );
+</script>
 <?php
-}
-
-page_script_add( SITE_URL . 'js/modal.js' );
-
-page_body_add( sprintf( 'presences_%s_body', $mode ) );
-
-page_body_add( 'presences_actions_html' );
+} );
 
 page_html();

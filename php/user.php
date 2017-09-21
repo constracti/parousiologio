@@ -12,6 +12,15 @@ class user extends entity {
 	const ROLE_ADMIN = 5;
 	const ROLE_SUPER = 6;
 
+	const ROLES = [
+		user::ROLE_UNVER => 'εγγεγραμμένος',
+		user::ROLE_GUEST => 'επισκέπτης',
+		user::ROLE_BASIC => 'βασικός',
+		user::ROLE_OBSER => 'παρατηρητής',
+		user::ROLE_ADMIN => 'διαχειριστής',
+		user::ROLE_SUPER => 'ιδρυτής',
+	];
+
 	const FIELDS = [
 		'user_id'       => 'i',
 		'email_address' => 's',
@@ -24,13 +33,37 @@ class user extends entity {
 	];
 
 	public $user_id;       # integer, primary key
-	public $email_address; # varchar, unique
+	public $email_address; # varchar
 	public $password_hash; # varchar, nullable
 	public $last_name;     # varchar, nullable
 	public $first_name;    # varchar, nullable
 	public $role_id;       # integer, default 1
 	public $reg_time;      # timestamp
 	public $reg_ip;        # varchar
+
+	public static function select_by_email_address( string $email_address ) {
+		global $db;
+		$stmt = $db->prepare( 'SELECT `xa_user`.* FROM `xa_user` WHERE `email_address` = ? AND `role_id` > ? LIMIT 1' );
+		$stmt->bind_param( 'si', $email_address, $role_id = user::ROLE_UNVER );
+		$stmt->execute();
+		$rslt = $stmt->get_result();
+		$stmt->close();
+		$item = $rslt->fetch_object( 'user' );
+		$rslt->free();
+		return $item;
+	}
+
+	public static function clear_by_email_address( string $email_address ) {
+		global $db;
+		$stmt = $db->prepare( 'DELETE FROM `xa_user` WHERE `email_address` = ? AND `role_id` = ?' );
+		$stmt->bind_param( 'si', $email_address, $role_id = user::ROLE_UNVER );
+		$stmt->execute();
+		$stmt->close();
+		$stmt = $db->prepare( 'DELETE FROM `xa_vlink` WHERE `type` = ? AND `data` = ? AND `act_tm` IS NOT NULL' );
+		$stmt->bind_param( 'ss', $type = 'chmail', $email_address );
+		$stmt->execute();
+		$stmt->close();
+	}
 
 	public function select_index_teams( int $season_id ): array {
 		global $db;
@@ -66,5 +99,17 @@ ORDER BY `xa_location`.`is_swarm` DESC, `xa_location`.`location_name` ASC, `xa_g
 		$value = $rslt->num_rows > 0;
 		$rslt->free();
 		return $value;
+	}
+
+	public function inform() {
+		require_once SITE_DIR . 'php/mailer.php';
+		$mail = new mailer();
+		$mail->addAddress( MAIL_USER );
+		$mail->addReplyTo( $user->email_address );
+		$mail->Subject = sprintf( '%s - %s', SITE_NAME, 'εγγραφή' );
+		$mail->msgHTML( implode( mailer::NEWLINE, [
+			sprintf( '<p>Ο χρήστης με διεύθυνση email <i>%s</i> ολοκλήρωσε την εγγραφή του στο Παρουσιολόγιο.</p>', $this->email_address ),
+		] ) );
+		$mail->send();
 	}
 }

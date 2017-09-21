@@ -1,38 +1,22 @@
 <?php
 
-require_once 'php/page.php';
+require_once 'php/core.php';
 
-if ( is_null( $cuser ) ) {
-	header( 'location: ' . SITE_URL );
-	exit;
-}
+privilege( user::ROLE_GUEST );
 
-$field_success = TRUE;
 $fields = [
-	'email_address' => new field( 'email_address', [
-		'type' => 'email',
+	'email_address' => new field_email( 'email_address', [
 		'placeholder' => 'καινούρια διεύθυνση email',
 		'required' => TRUE,
 		'value' => $cuser->email_address,
 	] ),
 ];
 
-$field_success && ( function( array $fields ) {
-	global $cuser;
-	if ( $_SERVER['REQUEST_METHOD'] !== 'POST' )
-		return;
-	$email_address = $fields['email_address']->value();
-	$user = user::select_by( 'email_address', $email_address );
-	if ( !is_null( $user ) && $user->role_id === user::ROLE_UNVER ) {
-		$user->delete();
-		$user = NULL;
-	}
-	if ( !is_null( $user ) ) {
-		if ( $user->user_id === $cuser->user_id )
-			return page_message_add( 'Η καινούρια διεύθυνση email είναι ίδια με την παλιά.', 'error' );
-		else
-			return page_message_add( 'Υπάρχει άλλος εγγεγραμμένος χρήστης με αυτή τη διεύθυνση email.', 'error' );
-	}
+if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
+	$email_address = $fields['email_address']->post();
+	$user = user::select_by_email_address( $email_address );
+	if ( !is_null( $user ) )
+			failure( sprintf( 'Η διεύθυνση email %s είναι δεσμευμένη.', $email_address ) );
 	$vlink = vlink::write( $cuser->user_id, 'chmail', $email_address );
 	require_once SITE_DIR . 'php/mailer.php';
 	$mail = new mailer();
@@ -45,8 +29,11 @@ $field_success && ( function( array $fields ) {
 		'<p><small>Αν η ενέργεια δεν προήλθε από εσένα, αγνόησε το παρόν μήνυμα.</small></p>',
 	] ) );
 	$mail->send();
-	return page_message_add( 'Ακολούθησε το σύνδεσμο που εστάλη στα εισερχόμενά σου για να αλλάξεις τη διεύθυνση email του λογαριασμού σου.', 'success' );
-} )( $fields );
+	success( [
+		'alert' => 'Ακολούθησε το σύνδεσμο που εστάλη στα εισερχόμενά σου για να αλλάξεις τη διεύθυνση email του λογαριασμού σου.',
+		'location' => SITE_URL . 'settings.php',
+	] );
+}
 
 page_title_set( 'Διεύθυνση email' );
 
@@ -63,6 +50,6 @@ page_nav_add( function() {
 <?php
 } );
 
-page_body_add( 'form_html', $fields );
+page_body_add( 'form_section', $fields );
 
 page_html();

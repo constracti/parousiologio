@@ -50,4 +50,30 @@ class dtime extends DateTime {
 			default: return '';
 		}
 	}
+
+	public function weekday_name(): string {
+		switch ( intval( $this->format( 'w' ) ) ) {
+			case 0: return 'Κυριακή';
+			case 1: return 'Δευτέρα';
+			case 2: return 'Τρίτη';
+			case 3: return 'Τετάρτη';
+			case 4: return 'Πέμπτη';
+			case 5: return 'Παρασκευή';
+			case 6: return 'Σάββατο';
+			default: return '';
+		}
+	}
+
+	public function weekday_short_name(): string {
+		switch ( intval( $this->format( 'w' ) ) ) {
+			case 0: return 'Κυ';
+			case 1: return 'Δε';
+			case 2: return 'Τρ';
+			case 3: return 'Τε';
+			case 4: return 'Πε';
+			case 5: return 'Πα';
+			case 6: return 'Σα';
+			default: return '';
+		}
+	}
 }
