@@ -1,5 +1,7 @@
 <?php
 
+# TODO move inline css and js in separate files
+
 require_once 'panel.php';
 require_once 'table.php';
 
@@ -76,6 +78,28 @@ function page_nav_add( callable $function, ...$arguments ) {
 	];
 }
 
+function bar_link( array $arguments = [] ) {
+	if ( !array_key_exists( 'href', $arguments ) )
+		$arguments['href'] = NULL;
+	if ( !array_key_exists( 'text', $arguments ) )
+		$arguments['text'] = NULL;
+	if ( !array_key_exists( 'icon', $arguments ) )
+		$arguments['icon'] = NULL;
+	if ( !array_key_exists( 'hide_small', $arguments ) )
+		$arguments['hide_small'] = TRUE;
+	if ( !array_key_exists( 'hide_medium', $arguments ) )
+		$arguments['hide_medium'] = TRUE;
+	$class = [];
+	if ( $arguments['hide_small'] )
+		$class[] = 'w3-hide-small';
+	if ( $arguments['hide_medium'] )
+		$class[] = 'w3-hide-medium';
+	echo sprintf( '<a class="w3-bar-item w3-button" href="%s" title="%s">', $arguments['href'], $arguments['text'] ) . "\n";
+	echo sprintf( '<span class="fa %s"></span>', $arguments['icon'] ) . "\n";
+	echo sprintf( '<span class="%s">%s</span>', implode( ' ', $class ), $arguments['text'] ) . "\n";
+	echo '</a>' . "\n";
+}
+
 page_nav_add( function() {
 ?>
 <a class="w3-bar-item w3-button" href="<?= season_href() ?>" title="αρχική">
@@ -119,10 +143,36 @@ page_nav_add( function() {
 		<span class="fa fa-caret-down"></span>
 	</button>
 	<div class="w3-dropdown-content w3-bar-block w3-theme-l2">
-		<a class="w3-bar-item w3-button" href="<?= season_href( 'events.php' ) ?>" title="συμβάντα">
-			<span class="fa fa-calendar-check-o"></span>
-			<span>συμβάντα</span>
-		</a>
+<?php
+	bar_link( [
+		'href' => season_href( 'events.php' ),
+		'text' => 'συμβάντα',
+		'icon' => 'fa-calendar-check-o',
+		'hide_small' => FALSE,
+		'hide_medium' => FALSE,
+	] );
+	bar_link( [
+		'href' => season_href( 'teams.php' ),
+		'text' => 'ομάδες',
+		'icon' => 'fa-users',
+		'hide_small' => FALSE,
+		'hide_medium' => FALSE,
+	] );
+	bar_link( [
+		'href' => SITE_URL . 'locations.php',
+		'text' => 'περιοχές',
+		'icon' => 'fa-globe',
+		'hide_small' => FALSE,
+		'hide_medium' => FALSE,
+	] );
+	bar_link( [
+		'href' => SITE_URL . 'users.php',
+		'text' => 'χρήστες',
+		'icon' => 'fa-user',
+		'hide_small' => FALSE,
+		'hide_medium' => FALSE,
+	] );
+?>
 	</div>
 </div>
 <?php
@@ -339,6 +389,53 @@ $( '.link-ajax' ).click( function() {
 
 } );
 </script>
+<style>
+ul.relation>li {
+	padding: 4px 8px;
+	display: flex;
+	justify-content:
+	space-between;
+	align-items: center;
+}
+ul.relation>li>* {
+	margin: 4px 8px;
+	flex-shrink: 0;
+}
+ul.relation>li:first-child>*:not(:last-child) {
+	flex-shrink: 1;
+}
+ul.relation>li:not(:first-child) {
+	flex-wrap: wrap;
+}
+ul.relation>li:not(:first-child)>* {
+	flex-grow: 1;
+}
+ul.relation>li:not(:first-child)>a:first-child {
+	width: calc( 100% - 16px );
+}
+ul.relation[data-relation="grade"]>li:not(:first-child)>label {
+	width: calc( 100% / 3 - 16px );
+}
+</style>
+<script>
+$( function() {
+
+$( 'ul.relation>li:not(:first-child)>a:first-child' ).click( function() {
+	$( this ).siblings().children( 'input[type="checkbox"]' ).prop( 'checked', true );
+	$.post( $( this ).prop( 'href' ) );
+	return false;
+} );
+$( 'ul.relation>li:first-child>a:last-child' ).click( function() {
+	$( this ).parent( 'li' ).siblings().children().children( 'input[type="checkbox"]' ).prop( 'checked', false );
+	$.post( $( this ).prop( 'href' ) );
+	return false;
+} );
+$( 'ul.relation>li:not(:first-child)>label>input[type="checkbox"]' ).change( function() {
+	$.post( $( this ).data( $( this ).prop( 'checked' ) ? 'href-on' : 'href-off' ) );
+} );
+
+} );
+</script>
 <?php
 } );
 
@@ -394,6 +491,20 @@ body>.w3-bar:first-child>.w3-dropdown-hover.w3-right>.w3-dropdown-content {
 	position: fixed;
 	right: 50px;
 	bottom: 50px;
+}
+
+ul.list>li {
+	padding: 4px 8px;
+	display: flex;
+	justify-content:
+	space-between;
+	align-items: center;
+}
+ul.list>li>* {
+	margin: 4px 8px;
+}
+ul.list>li>*:last-child {
+	flex-shrink: 0;
 }
 		</style>
 <?php

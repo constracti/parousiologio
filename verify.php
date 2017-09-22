@@ -5,7 +5,7 @@ require_once 'php/core.php';
 page_title_set( 'Επαλήθευση' );
 
 ( function() {
-	$vlink = vlink::request( 'vlink_id' );
+	$vlink = vlink::request();
 	$code = request_var( 'code' );
 	if ( !password_verify( $code, $vlink->hash ) )
 		return page_message_add( 'Ο σύνδεσμος επαλήθευσης δεν είναι σωστός.', 'error' );

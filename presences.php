@@ -8,15 +8,15 @@ $mode = request_var( 'mode' );
 if ( !in_array( $mode, [ 'desktop', 'mobile' ] ) )
 	failure( 'argument_not_valid', 'mode' );
 
-$team = team::request( 'team_id' );
+$team = team::request();
 if ( !$cuser->has_team( $team->team_id ) )
 	failure( 'argument_not_valid', 'team_id' );
 
 if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
-	$child = child::request( 'child_id' );
+	$child = child::request();
 	if ( !$team->has_child( $child->child_id ) )
 		failure( 'argument_not_valid', 'child_id' );
-	$event = event::request( 'event_id' );
+	$event = event::request();
 	if ( !$team->has_event( $event->event_id ) )
 		failure( 'argument_not_valid', 'event_id' );
 	$check = request_var( 'check' ) === 'on';
@@ -27,25 +27,26 @@ if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
 	success();
 }
 
+
+/********
+ * main *
+ ********/
+
 $location = location::select_by( 'location_id', $team->location_id );
 
-page_title_set( sprintf( '%s (%s %d)', $team->team_name, $location->location_name, $cyear ) );
+page_title_set( sprintf( '%s (%s %d)', $team->team_name, $location->location_name, $cseason->year ) );
 
 page_script_add( SITE_URL . 'js/properties.js' );
 page_script_add( SITE_URL . 'js/months.js' );
 page_script_add( SITE_URL . 'js/presences.js' );
 
 page_nav_add( 'season_dropdown' );
-page_nav_add( function() {
-	global $mode;
-	global $team;
-?>
-<a class="w3-bar-item w3-button" href="<?= SITE_URL ?>presences.php?mode=<?= $mode ?>&team_id=<?= $team->team_id ?>" title="παρουσίες">
-	<span class="fa fa-check-square"></span>
-	<span class="w3-hide-small w3-hide-medium">παρουσίες</span>
-</a>
-<?php
-} );
+
+page_nav_add( 'bar_link', [
+	'href' => SITE_URL . sprintf( 'presences.php?mode=%s&team_id=%d', $mode, $team->team_id ),
+	'text' => 'παρουσίες',
+	'icon' => 'fa-check-square',
+] );
 
 $children = $team->get_children();
 $events = $team->get_events();
@@ -359,5 +360,10 @@ find( '.w3-hover-red' ).click( function() {
 </script>
 <?php
 } );
+
+
+/********
+ * exit *
+ ********/
 
 page_html();

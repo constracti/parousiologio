@@ -74,11 +74,10 @@ class field {
 	}
 
 	public function html() {
-		echo '<label>';
-		echo sprintf( '<span>%s</span>', $this->atts['placeholder'] );
+		echo '<label>' . "\n";
+		echo sprintf( '<span>%s</span>', $this->atts['placeholder'] ) . "\n";
 		if ( $this->atts['required'] )
-			echo '<span>*</span>';
-		echo '<br />' . "\n";
+			echo '<span>*</span>' . "\n";
 		$this->element();
 		echo '</label>' . "\n";
 	}
@@ -153,7 +152,7 @@ class field_select extends field {
 	}
 
 	public function post() {
-		$var = parent::post();
+		$var = request_var( $this->name, !$this->atts['required'] );
 		if ( is_null( $var ) )
 			return NULL;
 		foreach ( $this->options as $value => $label )
@@ -171,5 +170,74 @@ class field_select extends field {
 		foreach ( $this->options as $value => $label )
 			echo sprintf( '<option value="%s"%s>%s</option>', $value, $value === $this->atts['value'] ? ' selected="selected"' : '', $label ) . "\n";
 		echo '</select>' . "\n";
+	}
+}
+
+/*
+class field_checkbox extends field {
+
+	public function __construct( string $name, array $atts = [] ) {
+		if ( !array_key_exists( 'type', $atts ) )
+			$atts['type'] = 'checkbox';
+		$atts['checked'] = array_key_exists( 'value', $atts ) && $atts['value'];
+		$atts['value'] = 'on';
+		parent::__construct( $name, $atts );
+	}
+
+	public function post() {
+		if ( request_bool( $this->name ) )
+			return TRUE;
+		if ( $this->atts['required'] )
+			failure( 'argument_not_defined', $this->name );
+		return FALSE;
+	}
+
+	public function element() {
+		echo '<input class="w3-check"';
+		$this->attributes();
+		echo ' />' . "\n";
+	}
+}
+*/
+
+class field_radio extends field {
+
+	public $options;
+
+	public function __construct( string $name, array $options, array $atts = [] ) {
+		$this->options = $options;
+		if ( !array_key_exists( 'type', $atts ) )
+			$atts['type'] = 'radio';
+		parent::__construct( $name, $atts );
+	}
+
+	public function post() {
+		$var = request_var( $this->name, !$this->atts['required'] );
+		if ( is_null( $var ) )
+			return NULL;
+		foreach ( $this->options as $value => $label )
+			if ( $var === strval( $value ) )
+				return $value;
+		failure( 'argument_not_valid', $this->name );
+	}
+
+	public function element() {
+		echo '<input class="w3-radio"';
+		$this->attributes();
+		echo ' />' . "\n";
+	}
+
+	public function html() {
+		$val = $this->atts['value'];
+		foreach ( $this->options as $value => $label ) {
+			$this->atts['value'] = $value;
+			$this->atts['checked'] = $value === $val;
+			echo '<label>' . "\n";
+			$this->element();
+			echo sprintf( '<span>%s</span>', $label ) . "\n";
+			echo '</label>' . "\n";
+		}
+		$this->atts['value'] = $val;
+		unset( $this->atts['checked'] );
 	}
 }

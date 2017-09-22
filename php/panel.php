@@ -40,6 +40,8 @@ class panel {
 			return $comp( $item ) !== $comp( $next );
 		elseif ( is_string( $comp ) )
 			return $item->$comp !== $next->$comp;
+		elseif ( is_null( $comp ) )
+			return FALSE;
 		return TRUE;
 	}
 

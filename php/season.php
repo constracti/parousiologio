@@ -22,7 +22,9 @@ class season extends entity {
 	}
 
 	public static function select_options(): array {
-		$seasons = season::select( [], [ 'year' => 'DESC' ] );
+		$seasons = season::select( [], [
+			'year' => 'DESC'
+		] );
 		$options = [];
 		foreach ( $seasons as $season )
 			$options[ $season->season_id ] = sprintf( '%d: %s', $season->year, $season->slogan_old );

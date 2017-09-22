@@ -20,9 +20,9 @@ $panel->add( function( event $event ) {
 }, function( event $event ) {
 	$dt = dtime::from_sql( $event->date, dtime::DATE );
 	echo '<section class="w3-panel w3-content">' . "\n";
-	echo '<ul class="w3-ul w3-border w3-theme-l4">' . "\n";
-	echo '<li class="w3-container w3-theme">' . "\n";
-	echo sprintf( '<h3 style="margin: 0px;">%s %s</h3>', $dt->month_name(), $dt->format( 'Y' ) ) . "\n";
+	echo '<ul class="w3-ul w3-border w3-theme-l4 list">' . "\n";
+	echo '<li class="w3-theme">' . "\n";
+	echo sprintf( '<div style="font-size: large;">%s %s</div>', $dt->month_name(), $dt->format( 'Y' ) ) . "\n";
 	echo '</li>' . "\n";
 }, function( event $event ) {
 	echo '</ul>' . "\n";
@@ -31,21 +31,17 @@ $panel->add( function( event $event ) {
 $panel->add( 'event_id', function( event $event ) {
 	$dt = dtime::from_sql( $event->date, dtime::DATE );
 	echo '<li>' . "\n";
-	echo '<div style="display: flex; justify-content: space-between; align-items: center;">' . "\n";
 	echo '<div>' . "\n";
-	echo '<p style="margin: 0px;">' . "\n";
 	echo sprintf( '<span class="w3-tag w3-round w3-theme-action" style="font-size: small;">%s, %s</span>', $dt->weekday_short_name(), $dt->format( 'j' ) ) . "\n";
 	if ( !is_null( $event->name ) )
 		echo sprintf( '<span>%s</span>', $event->name ) . "\n";
-	echo '</p>' . "\n";
 }, function( event $event ) {
 	echo '</div>' . "\n";
-	echo '<div style="flex-shrink: 0;">' . "\n";
-	echo '<div class="w3-bar w3-round">' . "\n";
-	echo sprintf( '<a href="%sevent-update.php?event_id=%d" class="w3-bar-item w3-button w3-theme" title="επεξεργασία"><span class="fa fa-pencil"></span></a>', SITE_URL, $event->event_id ) . "\n";
-	echo sprintf( '<a href="%sevent-delete.php?event_id=%d" class="w3-bar-item w3-button w3-red link-ajax" data-confirm="οριστική διαγραφή;" title="διαγραφή" data-remove="li"><span class="fa fa-trash"></span></a>', SITE_URL, $event->event_id ) . "\n";
-	echo '</div>' . "\n";
-	echo '</div>' . "\n";
+	echo '<div>' . "\n";
+	$href = SITE_URL . sprintf( 'event-update.php?event_id=%d', $event->event_id );
+	echo sprintf( '<a href="%s" class="w3-button w3-round w3-green" title="επεξεργασία"><span class="fa fa-pencil"></span></a>', $href ) . "\n";
+	$href = SITE_URL . sprintf( 'event-delete.php?event_id=%d', $event->event_id );
+	echo sprintf( '<a href="%s" class="w3-button w3-round w3-red link-ajax" title="διαγραφή" data-confirm="οριστική διαγραφή;" data-remove="li"><span class="fa fa-trash"></span></a>', $href ) . "\n";
 	echo '</div>' . "\n";
 	echo '</li>' . "\n";
 } );

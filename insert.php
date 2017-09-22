@@ -8,7 +8,7 @@ $mode = request_var( 'mode' );
 if ( !in_array( $mode, [ 'desktop', 'mobile' ] ) )
 	failure( 'argument_not_valid', 'mode' );
 
-$team = team::request( 'team_id' );
+$team = team::request();
 if ( !$cuser->has_team( $team->team_id ) )
 	failure( 'argument_not_valid', 'team_id' );
 
@@ -43,7 +43,7 @@ $fields = [
 	'grade_id' => new field_select( 'grade_id', $grades, [
 		'placeholder' => 'τάξη',
 		'required' => TRUE,
-		'data-year' => $cyear,
+		'data-year' => $cseason->year,
 	] ),
 	'birth_year' => new field_year( 'birth_year', [
 		'placeholder' => 'έτος γέννησης',
@@ -116,29 +116,37 @@ if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
 	] );
 }
 
+
+/********
+ * main *
+ ********/
+
 page_title_set( 'Προσθήκη' );
 
 page_script_add( SITE_URL . 'js/birth_year.js' );
 
 page_nav_add( 'season_dropdown' );
-page_nav_add( function() {
-	global $mode;
-	global $team;
-?>
-			<a class="w3-bar-item w3-button" href="<?= SITE_URL ?>presences.php?mode=<?= $mode ?>&team_id=<?= $team->team_id ?>" title="παρουσίες">
-				<span class="fa fa-check-square"></span>
-				<span class="w3-hide-small w3-hide-medium">παρουσίες</span>
-			</a>
-			<a class="w3-bar-item w3-button" href="<?= SITE_URL ?>insert.php?mode=<?= $mode ?>&team_id=<?= $team->team_id ?>" title="προσθήκη">
-				<span class="fa fa-plus"></span>
-				<span class="w3-hide-small w3-hide-medium">προσθήκη</span>
-			</a>
-<?php
-} );
+
+page_nav_add( 'bar_link', [
+	'href' => SITE_URL . sprintf( 'presences.php?mode=%s&team_id=%d', $mode, $team->team_id ),
+	'text' => 'παρουσίες',
+	'icon' => 'fa-check-square',
+] );
+
+page_nav_add( 'bar_link', [
+	'href' => SITE_URL . sprintf( 'insert.php?mode=%s&team_id=%d', $mode, $team->team_id ),
+	'text' => 'προσθήκη',
+	'icon' => 'fa-plus',
+] );
 
 page_body_add( 'form_section', $fields, [
 	'full_screen' => TRUE,
 	'responsive' => 'w3-col l3 m6 s12',
 ] );
+
+
+/********
+ * exit *
+ ********/
 
 page_html();

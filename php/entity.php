@@ -152,7 +152,7 @@ abstract class entity {
 		$stmt->close();
 	}
 
-	public static function request( string $key, bool $nullable = FALSE ) {
+	public static function request( string $key = '', bool $nullable = FALSE ) {
 		$class = get_called_class();
 		$fields = $class::FIELDS;
 		$id = NULL;
@@ -162,6 +162,8 @@ abstract class entity {
 				break;
 			}
 		}
+		if ( $key === '' )
+			$key = $id;
 		$var = request_int( $key, $nullable );
 		if ( is_null( $var ) )
 			return NULL;

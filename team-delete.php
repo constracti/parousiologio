@@ -4,15 +4,15 @@ require_once 'php/core.php';
 
 privilege( user::ROLE_ADMIN );
 
-$event = event::request();
+$team = team::request();
 
-$event->delete();
+$team->delete();
 
-$href = season_href( 'events.php' );
+$href = season_href( 'teams.php' );
 if ( $_SERVER['HTTP_REFERER'] === $href )
 	success();
 
 success( [
-	'alert' => 'Το συμβάν διαγράφηκε.',
+	'alert' => 'Η ομάδα διαγράφηκε.',
 	'location' => $href,
 ] );

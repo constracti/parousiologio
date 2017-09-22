@@ -8,11 +8,11 @@ $mode = request_var( 'mode' );
 if ( !in_array( $mode, [ 'desktop', 'mobile' ] ) )
 	failure( 'argument_not_valid', 'mode' );
 
-$team = team::request( 'team_id' );
+$team = team::request();
 if ( !$cuser->has_team( $team->team_id ) )
 	failure( 'argument_not_valid', 'team_id' );
 
-$child = child::request( 'child_id' );
+$child = child::request();
 if ( !$team->has_child( $child->child_id ) )
 	failure( 'argument_not_valid', 'child_id' );
 

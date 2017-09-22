@@ -5,6 +5,33 @@ class dtime extends DateTime {
 	const DATE = 'Y-m-d';
 	const DATETIME = 'Y-m-d H:i:s';
 
+	const INTERVALS = [
+		'y' => [
+			's' => 'έτος',
+			'p' => 'έτη',
+		],
+		'm' => [
+			's' => 'μήνας',
+			'p' => 'μήνες',
+		],
+		'd' => [
+			's' => 'ημέρα',
+			'p' => 'ημέρες',
+		],
+		'h' => [
+			's' => 'ώρα',
+			'p' => 'ώρες',
+		],
+		'i' => [
+			's' => 'λεπτό',
+			'p' => 'λεπτά',
+		],
+		's' => [
+			's' => 'δευτερόλεπτο',
+			'p' => 'δευτερόλεπτα',
+		],
+	];
+
 	public static function from_php( int $php ): self {
 		$dt = new self();
 		$dt->setTimestamp( $php );
@@ -75,5 +102,19 @@ class dtime extends DateTime {
 			case 6: return 'Σα';
 			default: return '';
 		}
+	}
+
+	public function human_diff( $self = NULL ): string {
+		if ( is_null( $self ) )
+			$self = new self();
+		$di = $this->diff( $self );
+		foreach ( self::INTERVALS as $prop => $val ) {
+			if ( $di->$prop === 0 )
+				continue;
+			if ( $di->$prop === 1 )
+				return sprintf( '%d %s', $di->$prop, $val['s'] );
+			return sprintf( '%d %s', $di->$prop, $val['p'] );
+		}
+		return '';
 	}
 }

@@ -17,7 +17,7 @@ $fields = [
 	'season_id' => new field_select( 'season_id', season::select_options(), [
 		'placeholder' => 'έτος',
 		'required' => TRUE,
-		'value' => season::select_by( 'year', $cyear )->season_id,
+		'value' => $cseason->season_id,
 	] ),
 ];
 

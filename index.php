@@ -32,65 +32,40 @@ function social_login_html() {
 
 function home_html() {
 	global $cuser;
-	global $cyear;
-	$cseason = season::select_by( 'year', $cyear );
-	$teams = $cuser->select_index_teams( $cseason->season_id );
 	$panel = new panel();
 	$panel->add( 'location_id', function( team $team ) {
 ?>
 <section class="w3-container w3-col l4 m6 s12 w3-margin-bottom" style="float: none;">
-	<ul class="w3-ul w3-card-4 w3-theme-l4">
-		<li class="w3-container w3-theme">
-			<div style="display: flex; justify-content: space-between; align-items:center;">
-				<h3 style="margin: 0px;"><?= $team->location_name ?></h3>
-				<div class="w3-right-align"><?= $team->is_swarm ? 'ομάδα' : 'κατηχητικό' ?><br /><?= $team->on_sunday ? 'Κυριακή' : 'Σάββατο' ?></div>
-			</div>
+	<ul class="w3-ul w3-card-4 w3-theme-l4 list">
+		<li class="w3-theme">
+			<div style="font-size: large;"><?= $team->location_name ?></div>
+			<div style="text-align: right;"><?= $team->is_swarm ? 'ομάδα' : 'κατηχητικό' ?><br /><?= $team->on_sunday ? 'Κυριακή' : 'Σάββατο' ?></div>
 		</li>
 <?php
 	}, function( team $team ) {
-?>
-	</ul>
-</section>
-<?php
+		echo '</ul>' . "\n";
+		echo '</section>' . "\n";
 	} );
 	$panel->add( 'team_id', function( team $team ) {
-?>
-		<li>
-			<div style="display: flex; justify-content: space-between; align-items: center;">
-				<div>
-					<p style="margin: 0px;"><?= $team->team_name ?></p>
-					<div>
-<?php
-	}, function ( team $team ) {
-?>
-					</div>
-				</div>
-				<div style="flex-shrink: 0;">
-					<div class="w3-bar w3-round">
-						<a class="w3-button w3-bar-item w3-theme-action" href="<?= SITE_URL ?>presences.php?mode=desktop&team_id=<?= $team->team_id ?>" title="υπολογιστής" style="min-width: 50px;">
-							<span class="fa fa-desktop"></span>
-						</a>
-						<a class="w3-button w3-bar-item w3-theme" href="<?= SITE_URL ?>presences.php?mode=mobile&team_id=<?= $team->team_id ?>" title="κινητό" style="min-width: 50px;">
-							<span class="fa fa-mobile"></span>
-						</a>
-					</div>
-				</div>
-			</div>
-		</li>
-<?php
+		echo '<li>' . "\n";
+		echo '<div>' . "\n";
+		echo sprintf( '<div>%s</div>', $team->team_name ) . "\n";
+		echo '<div>' . "\n";
+		foreach ( $team->get_grades() as $grade )
+			echo sprintf( '<span class="w3-tag w3-round w3-theme" style="font-size: small;">%s</span>', $grade->grade_name ) . "\n";
+		echo '</div>' . "\n";
+		echo '</div>' . "\n";
+		echo '<div>' . "\n";
+		$href = SITE_URL . sprintf( 'presences.php?mode=desktop&team_id=%d', $team->team_id );
+		echo sprintf( '<a href="%s" class="w3-button w3-round w3-theme-action" title="υπολογιστής"><span class="fa fa-desktop"></span></a>', $href ) . "\n";
+		$href = SITE_URL . sprintf( 'presences.php?mode=mobile&team_id=%d', $team->team_id );
+		echo sprintf( '<a href="%s" class="w3-button w3-round w3-theme" title="κινητό"><span class="fa fa-mobile"></span></a>', $href ) . "\n";
+		echo '</div>' . "\n";
+		echo '</li>' . "\n";
 	} );
-	$panel->add( 'grade_id', function( team $team ) {
-?>
-						<span class="w3-tag w3-small w3-round w3-theme"><?= $team->grade_name ?></span>
-<?php
-	} );
-?>
-<div style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center;">
-<?php
-	$panel->html( $teams );
-?>
-</div>
-<?php
+	echo '<div style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center;">' . "\n";
+	$panel->html( $cuser->get_index() );
+	echo '</div>' . "\n";
 }
 
 if ( is_null( $cuser ) ) {

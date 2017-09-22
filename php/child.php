@@ -10,7 +10,7 @@ class child extends entity {
 		'mobile_phone'  => 's',
 		'email_address' => 's',
 		'school'        => 's',
-		'birth_year'    => 's',
+		'birth_year'    => 'i',
 		'fath_name'     => 's',
 		'fath_mobile'   => 's',
 		'fath_occup'    => 's',
@@ -24,11 +24,25 @@ class child extends entity {
 		'postal_code'   => 's',
 	];
 
-	public $child_id;   # integer, primary key
-	public $last_name;  # varchar, nullable
-	public $first_name; # varchar, nullable
-	public $school;     # varchar, nullable
-	public $city;       # varchar, nullable
+	public $child_id;      # integer, primary key
+	public $last_name;     # varchar
+	public $first_name;    # varchar
+	public $home_phone;    # varchar, nullable
+	public $mobile_phone;  # varchar, nullable
+	public $email_address; # varchar, nullable
+	public $school;        # varchar, nullable
+	public $birth_year;    # integer, nullable
+	public $fath_name;     # varchar, nullable
+	public $fath_mobile;   # varchar, nullable
+	public $fath_occup;    # varchar, nullable
+	public $fath_email;    # varchar, nullable
+	public $moth_name;     # varchar, nullable
+	public $moth_mobile;   # varchar, nullable
+	public $moth_occup;    # varchar, nullable
+	public $moth_email;    # varchar, nullable
+	public $address;       # varchar, nullable
+	public $city;          # varchar, nullable
+	public $postal_code;   # varchar, nullable
 
 	public function insert_event( int $event_id ) {
 		global $db;
