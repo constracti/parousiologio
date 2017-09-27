@@ -16,8 +16,8 @@ page_nav_add( 'bar_link', [
 $panel = new panel();
 $panel->add( 'is_swarm', function( location $location ) {
 	echo '<section class="w3-panel w3-content">' . "\n";
-	echo '<ul class="w3-ul w3-border w3-theme-l4 list">' . "\n";
-	echo '<li class="w3-theme">' . "\n";
+	echo '<ul class="w3-ul w3-border w3-theme-l4">' . "\n";
+	echo '<li class="flex w3-theme">' . "\n";
 	echo sprintf( '<div style="font-size: large;">%s</div>', $location->is_swarm ? 'ομάδες' : 'κατηχητικά' ) . "\n";
 	echo '</li>' . "\n";
 }, function( location $location ) {
@@ -25,7 +25,7 @@ $panel->add( 'is_swarm', function( location $location ) {
 	echo '</section>' . "\n";
 } );
 $panel->add( 'location_id', function( location $location ) {
-	echo '<li>' . "\n";
+	echo '<li class="flex">' . "\n";
 	echo '<div>' . "\n";
 	echo sprintf( '<div>%s</div>', $location->location_name ) . "\n";
 	echo '<div>' . "\n";
@@ -34,7 +34,7 @@ $panel->add( 'location_id', function( location $location ) {
 			echo sprintf( '<span class="w3-tag w3-round w3-theme" style="font-size: small;">%d: %d</span>', $season->year, $season->location_teams ) . "\n";
 	echo '</div>' . "\n";
 	echo '</div>' . "\n";
-	echo '<div>' . "\n";
+	echo '<div style="flex-shrink: 0;">' . "\n";
 	$href = SITE_URL . sprintf( 'location-update.php?location_id=%d', $location->location_id );
 	echo sprintf( '<a href="%s" class="w3-button w3-round w3-green" title="επεξεργασία"><span class="fa fa-pencil"></span></a>', $href ) . "\n";
 	$href = SITE_URL . sprintf( 'location-delete.php?location_id=%d', $location->location_id );

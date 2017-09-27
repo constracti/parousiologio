@@ -133,7 +133,7 @@ page_nav_add( function() {
 
 page_nav_add( function() {
 	global $cuser;
-	if ( is_null( $cuser ) || $cuser->role_id < user::ROLE_ADMIN )
+	if ( is_null( $cuser ) || $cuser->role_id < user::ROLE_OBSER )
 		return;
 ?>
 <div class="w3-dropdown-hover w3-right">
@@ -145,33 +145,42 @@ page_nav_add( function() {
 	<div class="w3-dropdown-content w3-bar-block w3-theme-l2">
 <?php
 	bar_link( [
-		'href' => season_href( 'events.php' ),
-		'text' => 'συμβάντα',
-		'icon' => 'fa-calendar-check-o',
+		'href' => site_href( 'view.php' ),
+		'text' => 'προβολή',
+		'icon' => 'fa-list',
 		'hide_small' => FALSE,
 		'hide_medium' => FALSE,
 	] );
-	bar_link( [
-		'href' => season_href( 'teams.php' ),
-		'text' => 'ομάδες',
-		'icon' => 'fa-users',
-		'hide_small' => FALSE,
-		'hide_medium' => FALSE,
-	] );
-	bar_link( [
-		'href' => SITE_URL . 'locations.php',
-		'text' => 'περιοχές',
-		'icon' => 'fa-globe',
-		'hide_small' => FALSE,
-		'hide_medium' => FALSE,
-	] );
-	bar_link( [
-		'href' => SITE_URL . 'users.php',
-		'text' => 'χρήστες',
-		'icon' => 'fa-user',
-		'hide_small' => FALSE,
-		'hide_medium' => FALSE,
-	] );
+	if ( $cuser->role_id >= user::ROLE_ADMIN ) {
+		bar_link( [
+			'href' => season_href( 'events.php' ),
+			'text' => 'συμβάντα',
+			'icon' => 'fa-calendar-check-o',
+			'hide_small' => FALSE,
+			'hide_medium' => FALSE,
+		] );
+		bar_link( [
+			'href' => season_href( 'teams.php' ),
+			'text' => 'ομάδες',
+			'icon' => 'fa-users',
+			'hide_small' => FALSE,
+			'hide_medium' => FALSE,
+		] );
+		bar_link( [
+			'href' => site_href( 'locations.php' ),
+			'text' => 'περιοχές',
+			'icon' => 'fa-globe',
+			'hide_small' => FALSE,
+			'hide_medium' => FALSE,
+		] );
+		bar_link( [
+			'href' => site_href( 'users.php' ),
+			'text' => 'χρήστες',
+			'icon' => 'fa-user',
+			'hide_small' => FALSE,
+			'hide_medium' => FALSE,
+		] );
+	}
 ?>
 	</div>
 </div>
@@ -393,8 +402,7 @@ $( '.link-ajax' ).click( function() {
 ul.relation>li {
 	padding: 4px 8px;
 	display: flex;
-	justify-content:
-	space-between;
+	justify-content: space-between;
 	align-items: center;
 }
 ul.relation>li>* {
@@ -493,18 +501,27 @@ body>.w3-bar:first-child>.w3-dropdown-hover.w3-right>.w3-dropdown-content {
 	bottom: 50px;
 }
 
-ul.list>li {
-	padding: 4px 8px;
+.flex {
 	display: flex;
-	justify-content:
-	space-between;
+	justify-content: space-between;
 	align-items: center;
+	padding: 4px 8px;
 }
-ul.list>li>* {
+.flex.flex-equal {
+	padding: 8px;
+}
+.flex.flex-equal>* {
+	margin: 8px;
+}
+.flex>* {
 	margin: 4px 8px;
 }
-ul.list>li>*:last-child {
-	flex-shrink: 0;
+.flex>.flex-m6 { width: calc(100%/1 - 16px); }
+@media (min-width:601px) {
+	.flex>.flex-m6 { width: calc(100%/2 - 16px); }
+}
+@media (min-width:993px) {
+	.flex>.flex-l4 { width: calc(100%/3 - 16px); }
 }
 		</style>
 <?php

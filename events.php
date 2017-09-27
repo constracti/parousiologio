@@ -20,8 +20,8 @@ $panel->add( function( event $event ) {
 }, function( event $event ) {
 	$dt = dtime::from_sql( $event->date, dtime::DATE );
 	echo '<section class="w3-panel w3-content">' . "\n";
-	echo '<ul class="w3-ul w3-border w3-theme-l4 list">' . "\n";
-	echo '<li class="w3-theme">' . "\n";
+	echo '<ul class="w3-ul w3-border w3-theme-l4">' . "\n";
+	echo '<li class="flex w3-theme">' . "\n";
 	echo sprintf( '<div style="font-size: large;">%s %s</div>', $dt->month_name(), $dt->format( 'Y' ) ) . "\n";
 	echo '</li>' . "\n";
 }, function( event $event ) {
@@ -30,14 +30,14 @@ $panel->add( function( event $event ) {
 } );
 $panel->add( 'event_id', function( event $event ) {
 	$dt = dtime::from_sql( $event->date, dtime::DATE );
-	echo '<li>' . "\n";
+	echo '<li class="flex">' . "\n";
 	echo '<div>' . "\n";
 	echo sprintf( '<span class="w3-tag w3-round w3-theme-action" style="font-size: small;">%s, %s</span>', $dt->weekday_short_name(), $dt->format( 'j' ) ) . "\n";
 	if ( !is_null( $event->name ) )
 		echo sprintf( '<span>%s</span>', $event->name ) . "\n";
 }, function( event $event ) {
 	echo '</div>' . "\n";
-	echo '<div>' . "\n";
+	echo '<div style="flex-shrink: 0;">' . "\n";
 	$href = SITE_URL . sprintf( 'event-update.php?event_id=%d', $event->event_id );
 	echo sprintf( '<a href="%s" class="w3-button w3-round w3-green" title="επεξεργασία"><span class="fa fa-pencil"></span></a>', $href ) . "\n";
 	$href = SITE_URL . sprintf( 'event-delete.php?event_id=%d', $event->event_id );

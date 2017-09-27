@@ -39,6 +39,7 @@ class user extends entity {
 		'reg_ip'        => 's',
 		'active_time'   => 's',
 		'active_ip'     => 's',
+		'meta'          => 's',
 	];
 
 	public $user_id;       # integer, primary key
@@ -58,6 +59,7 @@ class user extends entity {
 	public $reg_ip;        # varchar
 	public $active_time;   # timestamp, nullable
 	public $active_ip;     # varchar, nullable
+	public $meta;          # varchar, nullable
 
 	public static function select_by_email_address( string $email_address ) {
 		global $db;
@@ -83,19 +85,19 @@ class user extends entity {
 		$stmt->close();
 	}
 
-	public function get_index(): array {
+	public function select_teams(): array {
 		global $db;
 		global $cseason;
-		# TODO on_sunday move
 		$stmt = $db->prepare( '
-SELECT `xa_location`.`location_id`, `xa_location`.`location_name`, `xa_location`.`is_swarm`, `xa_team`.`on_sunday`, `xa_team`.`team_id`, `xa_team`.`team_name`
+SELECT `xa_location`.`location_id`, `xa_location`.`location_name`, `xa_location`.`is_swarm`,
+`xa_team`.`on_sunday`, `xa_team`.`team_id`, `xa_team`.`team_name`
 FROM `xa_team`
 JOIN `xa_location` ON `xa_location`.`location_id` = `xa_team`.`location_id`
 JOIN `xa_access` ON `xa_team`.`team_id` = `xa_access`.`team_id`
 JOIN `xa_target` ON `xa_team`.`team_id` = `xa_target`.`team_id`
 WHERE `xa_access`.`user_id` = ? AND `xa_team`.`season_id` = ?
 GROUP BY `xa_team`.`team_id`
-ORDER BY `xa_location`.`is_swarm` DESC, `xa_location`.`location_name` ASC, MIN( `xa_target`.`grade_id` ) ASC, `xa_team`.`team_id` ASC;
+ORDER BY `xa_location`.`is_swarm` DESC, `xa_location`.`location_name` ASC, MIN( `xa_target`.`grade_id` ) ASC, `xa_team`.`team_id` ASC
 		' );
 		$stmt->bind_param( 'ii', $this->user_id, $cseason->season_id );
 		$stmt->execute();
@@ -110,7 +112,7 @@ ORDER BY `xa_location`.`is_swarm` DESC, `xa_location`.`location_name` ASC, MIN( 
 
 	public function has_team( int $team_id ): bool {
 		global $db;
-		$stmt = $db->prepare( 'SELECT `user_id`, `team_id` FROM `xa_access` WHERE `user_id` = ? AND `team_id` = ?;' );
+		$stmt = $db->prepare( 'SELECT `user_id`, `team_id` FROM `xa_access` WHERE `user_id` = ? AND `team_id` = ?' );
 		$stmt->bind_param( 'ii', $this->user_id, $team_id );
 		$stmt->execute();
 		$rslt = $stmt->get_result();
@@ -118,6 +120,10 @@ ORDER BY `xa_location`.`is_swarm` DESC, `xa_location`.`location_name` ASC, MIN( 
 		$value = $rslt->num_rows > 0;
 		$rslt->free();
 		return $value;
+	}
+
+	public function accesses( int $team_id ): bool {
+		return $this->role_id >= user::ROLE_OBSER || $this->has_team( $team_id );
 	}
 
 	public function inform() {
@@ -204,5 +210,33 @@ WHERE `user_id` = ? AND `team_id` IN (
 		$stmt->bind_param( 'ii', $this->user_id, $cseason->season_id );
 		$stmt->execute();
 		$stmt->close();
+	}
+
+
+	/* meta */
+
+	public function get_meta( string $key ) {
+		if ( is_null( $this->meta ) )
+			return NULL;
+		$meta = unserialize( $this->meta );
+		if ( !array_key_exists( $key, $meta ) )
+			return NULL;
+		return $meta[ $key ];
+	}
+
+	public function set_meta( string $key, $value = NULL ) {
+		if ( is_null( $this->meta ) )
+			$meta = [];
+		else
+			$meta = unserialize( $this->meta );
+		if ( is_null( $value ) ) {
+			if ( array_key_exists( $key, $meta ) )
+				unset( $meta[ $key ] );
+			if ( empty( $meta ) )
+				$this->meta = NULL;
+		} else {
+			$meta[ $key ] = $value;
+			$this->meta = serialize( $meta );
+		}
 	}
 }

@@ -2,6 +2,8 @@
 
 require_once 'php/core.php';
 
+# TODO permit empty password
+
 privilege( user::ROLE_GUEST );
 
 $fields = [

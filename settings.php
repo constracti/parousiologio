@@ -4,8 +4,16 @@ require_once 'php/core.php';
 
 privilege( user::ROLE_GUEST );
 
+$fields = [];
+if ( $cuser->role_id >= user::ROLE_OBSER ) {
+	$fields['index'] = new field_checkbox( 'index', [
+		'placeholder' => 'προβολή όλων των ομάδων στην αρχική σελίδα',
+		'value' => $cuser->get_meta( 'index' ) === 'list',
+	] );
+}
+
 if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
-	switch ( request_var( 'delete' ) ) {
+	switch ( request_var( 'action', TRUE ) ) {
 		case 'epoint':
 			$epoint = epoint::request();
 			if ( $epoint->user_id !== $cuser->user_id )
@@ -21,7 +29,10 @@ if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
 			$vlink->delete();
 			success();
 		default:
-			failure( 'argument_not_valid', 'delete' );
+			if ( $cuser->role_id >= user::ROLE_OBSER )
+				$cuser->set_meta( 'index', $fields['index']->post() ? 'list' : NULL );
+			$cuser->update();
+			success();
 	}
 }
 
@@ -37,14 +48,12 @@ page_title_set( 'Ρυθμίσεις' );
 page_style_add( SITE_URL . 'css/table.css' );
 page_script_add( SITE_URL . 'js/table.js' );
 
-page_nav_add( function() {
-?>
-<a class="w3-bar-item w3-button" href="<?= SITE_URL ?>settings.php" title="ρυθμίσεις">
-	<span class="fa fa-cog"></span>
-	<span class="w3-hide-small">ρυθμίσεις</span>
-</a>
-<?php
-} );
+page_nav_add( 'bar_link', [
+	'href' => site_href( 'settings.php' ),
+	'text' => 'ρυθμίσεις',
+	'icon' => 'fa-cog',
+	'hide_medium' => FALSE,
+] );
 
 page_body_add( function() {
 ?>
@@ -55,6 +64,11 @@ page_body_add( function() {
 </section>
 <?php
 } );
+
+if ( !empty( $fields ) )
+	page_body_add( 'form_section', $fields, [
+		'header' => '<h3>προτιμήσεις</h3>',
+	] );
 
 
 /***********
@@ -81,13 +95,16 @@ $table->add( 'είσοδοι', function( epoint $epoint ) {
 $table->add( 'ενέργειες', function( epoint $epoint ) {
 	global $cepoint;
 	if ( $epoint->epoint_id !== $cepoint->epoint_id ) {
-		$href = SITE_URL . sprintf( 'settings.php?delete=epoint&epoint_id=%d', $epoint->epoint_id );
+		$href = site_href( 'settings.php', [
+			'action' => 'epoint',
+			'epoint_id' => $epoint->epoint_id,
+		] );
 		echo sprintf( '<a href="%s" class="link link-delete link-ajax" data-remove="tr">', $href ) . "\n";
 		echo '<span class="fa fa-trash"></span>' . "\n";
 		echo '<span>διαγραφή</span>' . "\n";
 		echo '</a>' . "\n";
 	} else {
-		$href = SITE_URL . 'logout.php';
+		$href = site_href( 'logout.php' );
 		echo sprintf( '<a href="%s" class="link">', $href ) . "\n";
 		echo '<span class="fa fa-sign-out" class="xa-link"></span>' . "\n";
 		echo '<span>έξοδος</span>' . "\n";
@@ -140,7 +157,10 @@ $table->add( 'ενεργοποίηση', function( vlink $vlink ) {
 	}
 } );
 $table->add( 'ενέργειες', function( vlink $vlink ) {
-	$href = SITE_URL . sprintf( 'settings.php?delete=vlink&vlink_id=%d', $vlink->vlink_id );
+	$href = site_href( 'settings.php', [
+		'action' => 'vlink',
+		'vlink_id' => $vlink->vlink_id
+	] );
 	echo sprintf( '<a href="%s" class="link link-delete link-ajax" data-remove="tr">', $href ) . "\n";
 	echo '<span class="fa fa-trash"></span>' . "\n";
 	echo '<span>διαγραφή</span>' . "\n";

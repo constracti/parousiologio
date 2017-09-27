@@ -173,7 +173,6 @@ class field_select extends field {
 	}
 }
 
-/*
 class field_checkbox extends field {
 
 	public function __construct( string $name, array $atts = [] ) {
@@ -197,8 +196,16 @@ class field_checkbox extends field {
 		$this->attributes();
 		echo ' />' . "\n";
 	}
+
+	public function html() {
+		echo '<label>' . "\n";
+		$this->element();
+		echo sprintf( '<span>%s</span>', $this->atts['placeholder'] ) . "\n";
+		if ( $this->atts['required'] )
+			echo '<span>*</span>' . "\n";
+		echo '</label>' . "\n";
+	}
 }
-*/
 
 class field_radio extends field {
 

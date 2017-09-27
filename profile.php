@@ -13,11 +13,46 @@ $fields = [
 		'placeholder' => 'όνομα',
 		'value' => $cuser->first_name,
 	] ),
+	'home_phone' => new field_phone( 'home_phone', [
+		'placeholder' => 'σταθερό τηλέφωνο',
+		'value' => $cuser->home_phone,
+	] ),
+	'mobile_phone' => new field_phone( 'mobile_phone', [
+		'placeholder' => 'κινητό τηλέφωνο',
+		'value' => $cuser->mobile_phone,
+	] ),
+	'occupation' => new field( 'occupation', [
+		'placeholder' => 'απασχόληση',
+		'value' => $cuser->occupation,
+	] ),
+	'first_year' => new field_year( 'first_year', [
+		'placeholder' => 'πρώτο έτος διακονίας',
+		'value' => $cuser->first_year,
+	] ),
+	'address' => new field( 'address', [
+		'placeholder' => 'διεύθυνση',
+		'value' => $cuser->address,
+	] ),
+	'city' => new field( 'city', [
+		'placeholder' => 'πόλη',
+		'value' => $cuser->city,
+	] ),
+	'postal_code' => new field_pc( 'postal_code', [
+		'placeholder' => 'ταχυδρομικός κώδικας',
+		'value' => $cuser->postal_code,
+	] ),
 ];
 
 if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
 	$cuser->last_name = $fields['last_name']->post();
 	$cuser->first_name = $fields['first_name']->post();
+	$cuser->home_phone = $fields['home_phone']->post();
+	$cuser->mobile_phone = $fields['mobile_phone']->post();
+	$cuser->occupation = $fields['occupation']->post();
+	$cuser->first_year = $fields['first_year']->post();
+	$cuser->address = $fields['address']->post();
+	$cuser->city = $fields['city']->post();
+	$cuser->postal_code = $fields['postal_code']->post();
 	$cuser->update();
 	success( [
 		'alert' => 'Το προφίλ ενημερώθηκε.',

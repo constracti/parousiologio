@@ -4,12 +4,8 @@ require_once 'php/core.php';
 
 privilege( user::ROLE_BASIC );
 
-$mode = request_var( 'mode' );
-if ( !in_array( $mode, [ 'desktop', 'mobile' ] ) )
-	failure( 'argument_not_valid', 'mode' );
-
 $team = team::request();
-if ( !$cuser->has_team( $team->team_id ) )
+if ( !$cuser->accesses( $team->team_id ) )
 	failure( 'argument_not_valid', 'team_id' );
 
 if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
@@ -36,21 +32,17 @@ $location = location::select_by( 'location_id', $team->location_id );
 
 page_title_set( sprintf( '%s (%s %d)', $team->team_name, $location->location_name, $cseason->year ) );
 
-page_script_add( SITE_URL . 'js/properties.js' );
-page_script_add( SITE_URL . 'js/months.js' );
-page_script_add( SITE_URL . 'js/presences.js' );
-
 page_nav_add( 'season_dropdown' );
 
 page_nav_add( 'bar_link', [
-	'href' => SITE_URL . sprintf( 'presences.php?mode=%s&team_id=%d', $mode, $team->team_id ),
+	'href' => SITE_URL . sprintf( 'presences.php?team_id=%d', $team->team_id ),
 	'text' => 'παρουσίες',
 	'icon' => 'fa-check-square',
 ] );
 
-$children = $team->get_children();
-$events = $team->get_events();
-$presences = $team->get_presences( $mode );
+$children = $team->select_children();
+$events = $team->select_events();
+$presences = $team->check_presences();
 $properties = [
 	'home_phone'    => 'σταθερό τηλέφωνο',
 	'mobile_phone'  => 'κινητό τηλέφωνο',
@@ -71,257 +63,331 @@ $properties = [
 	'postal_code'   => 'τ.κ.',
 ];
 
-function presences_desktop_body() {
-	global $mode;
+page_body_add( function() {
 	global $team;
-	global $children;
 	global $events;
+	global $children;
 	global $presences;
 	global $properties;
 ?>
-<section class="w3-panel">
-	<style>
-table.xa-presences {
-	width: initial;
-	margin: auto;
+<style>
+#presences-sidebar {
+	display: none;
+	flex-shrink: 10;
+	min-width: 120px;
 }
-table.xa-presences th, table.xa-presences td {
-	padding: 4px !important;
-	border: thin solid #ddd;
+#presences-sidebar>.presences-event.flex {
+	padding: 2px;
 }
-.xa-presence-day, .xa-presence-item, .xa-presence-event {
-	text-align: center !important;
+#presences-sidebar>.presences-event.flex>* {
+	margin: 2px;
 }
-.xa-presence-child, .xa-presence-total {
-	text-align: right !important;
+#presences-sidebar>.presences-event>:not(:last-child) {
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
-	</style>
-	<table class="xa-presences w3-table w3-striped w3-card-4">
-		<thead class="w3-theme">
-			<tr>
-				<th rowspan="2">ονοματεπώνυμο</th>
-<?php
-	foreach ( $properties as $property => $property_label ) {
-?>
-				<th class="xa-property" data-property="<?= $property ?>" rowspan="2"><?= $property_label ?></th>
-<?php
+#presences-sidebar>.presences-event>:last-child {
+	flex-shrink: 0;
+}
+#presences-container.presences-container-expanded>#presences-sidebar>.presences-event>:last-child {
+	display: none;
+}
+#presences-table .presences-property {
+	display: none;
+}
+#presences-table>*>tr>* {
+	padding: 4px;
+	text-align: left;
+}
+#presences-table>*>tr>.presences-event {
+	text-align: center;
+}
+#presences-table>*>tr>:last-child {
+	text-align: right;
+}
+
+@media (min-width:993px) {
+	#presences-table .presences-month.presences-month-hide {
+		display: none;
 	}
+	#presences-table .presences-property.presences-property-show {
+		display: table-cell;
+	}
+}
+
+@media (max-width:992px) {
+	#presences-container {
+		padding: 0px;
+	}
+	#presences-container>* {
+		display: block;
+		height: 100%;
+		margin: 0px;
+		flex-grow: 1;
+		overflow-y: auto;
+	}
+	#presences-container:not(.presences-container-expanded)>#presences-main {
+		display: none;
+	}
+	#presences-table {
+		width: 100%;
+		border-left: none !important;
+		border-right: none !important;
+	}
+	#presences-table>thead, #presences-table>tfoot,
+	#presences-table .presences-property,
+	#presences-table .presences-event:not(.presences-event-visible),
+	.action>.modal-show {
+		display: none;
+	}
+}
+</style>
+<?php
+	echo '<div id="presences-container" class="flex" style="justify-content: center; align-items: flex-start;">' . "\n";
+	echo '<div id="presences-sidebar" class="w3-border-top">' . "\n";
+	foreach ( array_reverse( $events, TRUE ) as $event ) {
+		$dt = new dtime( $event->event_date_fixed );
+		echo sprintf( '<a class="flex presences-event w3-button w3-border-bottom" data-event="%d">', $event->event_id ) . "\n";
+		echo '<div>' . "\n";
+		echo sprintf( '<time datetime="%s">%s, %s</time>', $dt->format( dtime::DATE ), $dt->weekday_short_name(), $dt->format( 'j/n' ) );
+		if ( !is_null( $event->name ) )
+			echo sprintf( ': <span>%s</span>', $event->name ) . "\n";
+		echo '</div>' . "\n";
+		echo sprintf( '<span class="presences-event-sum" data-event="%d"></span>', $event->event_id ) . "\n";
+		echo '</a>' . "\n";
+	}
+	echo '</div>' . "\n";
+	echo '<div id="presences-main">' . "\n";
+	echo '<table id="presences-table" class="w3-border w3-striped w3-hoverable" style="border-collapse: collapse;">' . "\n";
+	echo '<thead class="w3-theme">' . "\n";
+	echo '<tr>' . "\n";
+	echo '<th rowspan="2">ονοματεπώνυμο</th>' . "\n";
+	foreach ( $properties as $col => $colname )
+		echo sprintf( '<th rowspan="2" class="presences-property" data-property="%s">%s</th>', $col, $colname ) . "\n";
 	$panel = new panel();
 	$panel->add( function( event $event ) {
-		$dt = dtime::from_sql( $event->date, dtime::DATE );
+		$dt = new dtime( $event->event_date_fixed );
 		return $dt->format( 'Y-m' );
-	}, function ( event $event ) {
+	}, function( event $event ) {
 		global $month_counter;
 		$month_counter = 0;
-	}, function ( event $event ) {
+	}, function( event $event ) {
 		global $month_counter;
-		$dt = dtime::from_sql( $event->date, dtime::DATE );
-?>
-				<th class="xa-month" data-month="<?= $dt->format( 'Y-m' ) ?>" colspan="<?= $month_counter ?>"><?= $dt->month_name() ?></th>
-<?php
+		$dt = new dtime( $event->event_date_fixed );
+		echo sprintf( '<th colspan="%d" class="presences-month" data-month="%s">%s</th>', $month_counter, $dt->format( 'Y-m' ), $dt->month_name() ) . "\n";
 	} );
 	$panel->add( 'event_id', function( event $event ) {
 		global $month_counter;
 		$month_counter++;
 	} );
 	$panel->html( $events );
-?>
-				<th rowspan="2">παρουσίες</th>
-			</tr>
-			<tr>
-<?php
-	$panel = new panel();
-	$panel->add( 'event_id', function( event $event ) {
-		$dt = dtime::from_sql( $event->date, dtime::DATE );
-?>
-				<th class="xa-month xa-presence-day" data-month="<?= $dt->format( 'Y-m' ) ?>"><?= $dt->format( 'j' ) ?></th>
-<?php
-	} );
-	$panel->html( $events );
-?>
-			</tr>
-		</thead>
-		<tbody>
-<?php
-	$panel = new panel();
-	$panel->add( 'child_id', function( $item ) {
-		global $mode;
-		global $team;
-		global $children;
-		global $properties;
-		$child = $children[ $item->child_id ];
-?>
-			<tr>
-				<td>
-					<a href="<?= SITE_URL ?>update.php?mode=<?= $mode ?>&team_id=<?= $team->team_id ?>&child_id=<?= $child->child_id ?>" title="επεξεργασία">
-						<span><?= $child->last_name ?></span>
-						<span><?= $child->first_name ?></span>
-					</a>
-				</td>
-<?php
-		foreach ( $properties as $property => $property_label ) {
-?>
-				<td class="xa-property" data-property="<?= $property ?>"><?= $child->$property ?? '' ?></td>
-<?php
-		}
-	}, function( $item ) {
-?>
-				<td class="xa-presence-child" data-child="<?= $item->child_id ?>"></td>
-			</tr>
-<?php
-	} );
-	$panel->add( 'event_id', function( $item ) {
-		global $events;
-		$event = $events[ $item->event_id ];
-		$dt = dtime::from_sql( $event->date, dtime::DATE );
-?>
-				<td class="xa-month" data-month="<?= $dt->format( 'Y-m' ) ?>">
-					<input class="xa-presence-item" data-child="<?= $item->child_id ?>" data-event="<?= $item->event_id ?>" type="checkbox"<?= $item->check ? ' checked="checked"' : '' ?> />
-				</td>
-<?php
-	} );
-	$panel->html( $presences );
-?>
-		</tbody>
-		<tfoot class="w3-theme-l2">
-			<tr>
-				<td></td>
-<?php
-	foreach ( $properties as $property => $property_label ) {
-?>
-				<td class="xa-property" data-property="<?= $property ?>"></td>
-<?php
+	echo '<th rowspan="2">παρουσίες</th>' . "\n";
+	echo '</tr>' . "\n";
+	echo '<tr>' . "\n";
+	foreach ( $events as $event ) {
+		$dt = new dtime( $event->event_date_fixed );
+		echo sprintf( '<th class="presences-event presences-month" data-event="%d" data-month="%s">%s</th>', $event->event_id, $dt->format( 'Y-m' ), $dt->format( 'j' ) ) . "\n";
 	}
+	echo '</tr>' . "\n";
+	echo '</thead>' . "\n";
+	echo '<tbody>' . "\n";
 	$panel = new panel();
-	$panel->add( 'event_id', function( event $event ) {
-		$dt = dtime::from_sql( $event->date, dtime::DATE );
-?>
-				<td class="xa-month xa-presence-event" data-month="<?= $dt->format( 'Y-m' ) ?>" data-event="<?= $event->event_id ?>"></td>
-<?php
-	} );
-	$panel->html( $events );
-?>
-				<td class="xa-presence-total"></td>
-			</tr>
-		</tfoot>
-	</table>
-</section>
-<?php
-}
-
-function presences_mobile_body() {
-	global $presences;
-	$panel = new panel();
-	$panel->add( function( $item ) {
-		global $events;
-		$event = $events[ $item->event_id ];
-		$dt = dtime::from_sql( $event->date, dtime::DATE );
-		return $dt->format( 'Y-m' );
+	$panel->add( 'child_id', function( $item ) {
+		global $team;
+		global $children;
+		global $properties;
+		$child = $children[ $item->child_id ];
+		echo '<tr class="w3-border-top w3-border-bottom">' . "\n";
+		$href = SITE_URL . sprintf( 'update.php?team_id=%d&child_id=%d', $team->team_id, $child->child_id );
+		echo sprintf( '<td><a href="%s">%s %s</a></td>', $href, $child->last_name, $child->first_name ) . "\n";
+		foreach ( $properties as $col => $colname )
+			echo sprintf( '<td class="presences-property" data-property="%s">%s</td>', $col, $child->$col ) . "\n";
 	}, function( $item ) {
-		global $events;
-		$event = $events[ $item->event_id ];
-		$dt = dtime::from_sql( $event->date, dtime::DATE );
-		echo sprintf ( '<section class="w3-panel w3-content xa-month" data-month="%s">', $dt->format( 'Y-m' ) ) . "\n";
-		echo '<ul class="w3-ul w3-card-4 w3-theme-l4">' . "\n";
-		echo '<li class="w3-container w3-theme">' . "\n";
-		echo sprintf( '<h3 style="margin: 0px;">%s %s</h3>', $dt->month_name(), $dt->format( 'Y' ) ) . "\n";
-		echo '</li>' . "\n";
-	}, function( $item ) {
-		echo '</ul>' . "\n";
-		echo '</section>' . "\n";
+		echo sprintf( '<td class="presences-child-sum" data-child="%d"></td>', $item->child_id );
+		echo '</tr>' . "\n";
 	} );
 	$panel->add( 'event_id', function( $item ) {
 		global $events;
 		$event = $events[ $item->event_id ];
-		$dt = dtime::from_sql( $event->date, dtime::DATE );
-		echo sprintf( '<li class="xa-event">', $dt->format( 'Y-m' ) ) . "\n";
-		echo '<div style="display: flex; justify-content: space-between; align-items: center;">' . "\n";
-		echo sprintf( '<h5 style="margin: 0px;">%s. %s</h5>', $dt->format( 'j' ), $event->name ) . "\n";
-		echo '<div style="flex-shrink: 0;">' . "\n";
-		echo sprintf( '<span class="w3-badge w3-theme xa-presence-event" data-event="%d"></span>', $event->event_id ) . "\n";
-		echo '<a class="xa-event-toggle" style="cursor: pointer;"><span class="fa"></span></a>' . "\n";
-		echo '</div>' . "\n";
-		echo '</div>' . "\n";
-		echo '<div class="xa-event-content" style="display: none;">' . "\n";
-	}, function( $item ) {
-		echo '</div>' . "\n";
-		echo '</li>' . "\n";
-	} );
-	$panel->add( 'child_id', function( $item ) {
-		global $mode;
-		global $team;
-		global $children;
-		$child = $children[ $item->child_id ];
-		echo '<div style="margin: 8px 0px;">' . "\n";
-		echo '<div style="display: flex; justify-content: space-between; align-items: center;">' . "\n";
-		echo '<div style="display: flex; justify-content: flex-start; align-items: center;">' . "\n";
-		echo sprintf( '<input class="xa-presence-item" data-child="%d" data-event="%d" style="flex-shrink: 0;" type="checkbox"%s />', $item->child_id, $item->event_id, $item->check ? ' checked="checked"' : '' ) . "\n";
-		echo sprintf( '<a style="padding-left: 4px;" href="%supdate.php?mode=%s&team_id=%d&child_id=%d" title="επεξεργασία">', SITE_URL, $mode, $team->team_id, $child->child_id ) . "\n";
-		echo sprintf( '<span>%s</span>', $child->last_name ) . "\n";
-		echo sprintf( '<span>%s</span>', $child->first_name ) . "\n";
-		echo '</a>' . "\n";
-		echo '</div>' . "\n";
-		global $properties;
-		echo '<div style="flex-shrink: 0;">' . "\n";
-		foreach ( $properties as $property => $property_label ) {
-			if ( !in_array( $property, [ 'grade_name', 'home_phone', 'mobile_phone' ] ) )
-				continue;
-			echo sprintf( '<span class="xa-property w3-tag w3-theme w3-round w3-small" data-property="%s" title="%s" style="white-space: nowrap;">%s</span>', $property, $property_label, $child->$property ) . "\n";
-		}
-		echo '</div>' . "\n";
-		echo '</div>' . "\n";
+		$dt = new dtime( $event->event_date_fixed );
+		echo sprintf( '<td class="presences-event presences-month" data-event="%d" data-month="%s">', $item->event_id, $dt->format( 'Y-m' ) ) . "\n";
+		echo sprintf( '<input class="presences-check w3-check" style="margin-top: -8px;" data-child="%d" data-event="%d" type="checkbox"%s />', $item->child_id, $item->event_id, $item->check ? ' checked="checked"' : '' ) . "\n";
+		echo '</td>' . "\n";
 	} );
 	$panel->html( $presences );
+	echo '</tbody>' . "\n";
+	echo '<tfoot class="w3-theme">' . "\n";
+	echo '<tr>' . "\n";
+	echo '<td></td>' . "\n";
+	foreach ( $properties as $col => $colname )
+		echo sprintf( '<td class="presences-property" data-property="%s"></td>', $col ) . "\n";
+	foreach ( $events as $event ) {
+		$dt = new dtime( $event->event_date_fixed );
+		echo sprintf( '<td class="presences-event presences-month presences-event-sum" data-event="%d" data-month="%s"></td>', $event->event_id, $dt->format( 'Y-m' ) ) . "\n";
+	}
+	echo '<td class="presences-total-sum"></td>' . "\n";
+	echo '</tr>' . "\n";
+	echo '</tfoot>' . "\n";
+	echo '</table>' . "\n";
+	echo '</div>' . "\n";
+	echo '</div>' . "\n";
 ?>
 <script>
 $( function() {
 
-$( '.xa-event-toggle' ).find( '.fa' ).addClass( 'fa-plus-square-o' ).end().click( function() {
-	$( this ).
-	find( '.fa' ).toggleClass( 'fa-plus-square-o' ).toggleClass( 'fa-minus-square-o' ).end().
-	parents( '.xa-event' ).find( '.xa-event-content' ).toggle();
+function presences_child_sum( child ) {
+	sum = $( '.presences-check[data-child="' + child + '"]:checked' ).length;
+	$( '.presences-child-sum[data-child="' + child + '"]' ).html( sum );
+}
+function presences_event_sum( event ) {
+	sum = $( '.presences-check[data-event="' + event + '"]:checked' ).length;
+	$( '.presences-event-sum[data-event="' + event + '"]' ).html( sum );
+}
+function presences_total_sum() {
+	sum = $( '.presences-check:checked' ).length;
+	$( '.presences-total-sum' ).html( sum );
+}
+
+$( '#presences-table .presences-child-sum' ).each( function() {
+	var child = $( this ).data( 'child' );
+	presences_child_sum( child );
+} );
+$( '#presences-table .presences-event-sum' ).each( function() {
+	var event = $( this ).data( 'event' );
+	presences_event_sum( event );
+} );
+presences_total_sum();
+
+$( '.presences-check' ).change( function() {
+	var child = $( this ).data( 'child' );
+	var event = $( this ).data( 'event' );
+	presences_child_sum( child );
+	presences_event_sum( event );
+	presences_total_sum();
+	$.post( '', {
+		child_id: child,
+		event_id: event,
+		check : $( this ).prop( 'checked' ) ? 'on' : 'off',
+	} );
+} );
+
+$( '#presences-sidebar>.presences-event' ).click( function() {
+	var event = $( this ).data( 'event' );
+	var selected = !$( this ).hasClass( 'w3-theme' );
+	$( '#presences-sidebar>.presences-event' ).removeClass( 'w3-theme' );
+	$( '#presences-table .presences-event' ).removeClass( 'presences-event-visible' );
+	if ( selected ) {
+		$( '#presences-container' ).addClass( 'presences-container-expanded' );
+		$( this ).addClass( 'w3-theme' );
+		$( '#presences-table .presences-event[data-event="' + event + '"]' ).addClass( 'presences-event-visible' );
+	} else {
+		$( '#presences-container' ).removeClass( 'presences-container-expanded' );
+	}
+	if ( Storage !== undefined ) {
+		if ( selected )
+			localStorage.setItem( 'event', event );
+		else
+			localStorage.removeItem( 'event' );
+	}
+} );
+if ( Storage !== undefined && localStorage.getItem( 'event' ) !== null )
+	$( '#presences-sidebar>.presences-event[data-event="' + localStorage.getItem( 'event' ) + '"]' ).click();
+
+$( window ).resize( function() {
+	$( '#presences-container' ).height( $( window ).height() - $( '#presences-container' ).position().top );
+} ).resize();
+
+var properties = [
+	'grade_name',
+];
+if ( Storage !== undefined && localStorage.getItem( 'properties' ) !== null ) {
+	if ( localStorage.getItem( 'properties' ) !== '' )
+		properties = localStorage.getItem( 'properties' ).split( ';' );
+	else
+		properties = [];
+}
+$( '.property-toggle' ).each( function() {
+	var property = $( this ).data( 'property' );
+	var index = properties.indexOf( property );
+	if ( index !== -1 ) {
+		$( this ).addClass( 'w3-theme' );
+		$( '.presences-property[data-property="' + property + '"]' ).addClass( 'presences-property-show' );
+	}
+} ).click( function() {
+	var property = $( this ).data( 'property' );
+	var index = properties.indexOf( property );
+	if ( index !== -1 ) {
+		$( this ).removeClass( 'w3-theme' );
+		$( '.presences-property[data-property="' + property + '"]' ).removeClass( 'presences-property-show' );
+		properties.splice( index, 1 );
+	} else {
+		$( this ).addClass( 'w3-theme' );
+		$( '.presences-property[data-property="' + property + '"]' ).addClass( 'presences-property-show' );
+		properties.push( property );
+	}
+	if ( Storage !== undefined )
+		localStorage.setItem( 'properties', properties.join( ';' ) );
+} );
+
+var months = [];
+if ( Storage !== undefined && localStorage.getItem( 'months' ) !== null && localStorage.getItem( 'months' ) !== '' )
+	months = localStorage.getItem( 'months' ).split( ';' );
+$( '.month-toggle' ).each( function() {
+	var month = $( this ).data( 'month' );
+	var index = months.indexOf( month );
+	if ( index !== -1 )
+		$( '.presences-month[data-month="' + month + '"]' ).addClass( 'presences-month-hide' );
+	else
+		$( this ).addClass( 'w3-theme' );
+} ).click( function() {
+	var month = $( this ).data( 'month' );
+	var index = months.indexOf( month );
+	if ( index !== -1 ) {
+		$( this ).addClass( 'w3-theme' );
+		$( '.presences-month[data-month="' + month + '"]' ).removeClass( 'presences-month-hide' );
+		months.splice( index, 1 );
+	} else {
+		$( this ).removeClass( 'w3-theme' );
+		$( '.presences-month[data-month="' + month + '"]' ).addClass( 'presences-month-hide' );
+		months.push( month );
+	}
+	if ( Storage !== undefined )
+		localStorage.setItem( 'months', months.join( ';' ) );
 } );
 
 } );
 </script>
 <?php
-}
-
-page_script_add( SITE_URL . 'js/modal.js' );
-
-page_body_add( sprintf( 'presences_%s_body', $mode ) );
+} );
 
 page_body_add( function() {
-	global $mode;
 	global $team;
 	global $events;
 	global $properties;
 ?>
 <section class="action">
-	<button class="w3-button w3-circle w3-theme xa-modal-show" data-modal="#xa-modal-view" title="προβολή">
+	<button class="w3-button w3-circle w3-theme modal-show" data-modal="#modal-view" title="προβολή">
 		<span class="fa fa-eye"></span>
 	</button>
 	<a href="<?= SITE_URL ?>download.php?team_id=<?= $team->team_id ?>" class="w3-button w3-circle w3-theme" title="μεταφόρτωση">
 		<span class="fa fa-download"></span>
 	</a>
-	<a href="<?= SITE_URL ?>insert.php?mode=<?= $mode ?>&team_id=<?= $team->team_id ?>" class="w3-button w3-circle w3-theme-action" title="προσθήκη">
+	<a href="<?= SITE_URL ?>insert.php?team_id=<?= $team->team_id ?>" class="w3-button w3-circle w3-theme-action" title="προσθήκη">
 		<span class="fa fa-plus"></span>
 	</a>
 </section>
-<section class="w3-modal modal-columns xa-modal" id="xa-modal-view">
+<section class="w3-modal modal" id="modal-view">
 	<div class="w3-modal-content w3-card-4">
-		<div class="w3-container w3-theme">
-			<div style="display: flex; justify-content: space-between; align-items: center;">
-				<h3>στήλες</h3>
-				<span class="w3-button w3-theme w3-hover-red" title="κλείσιμο" style="flex-shrink: 0;">
-					<span class="fa fa-times"></span>
-				</span>
-			</div>
+		<div class="flex w3-theme">
+			<div style="font-size: large;">στήλες</div>
+			<span class="w3-button w3-theme w3-hover-red" title="κλείσιμο" style="flex-shrink: 0;">
+				<span class="fa fa-times"></span>
+			</span>
 		</div>
 		<div class="w3-padding">
 <?php
-	foreach ( $properties as $property => $property_label )
-		echo "\t\t\t" . sprintf( '<button class="w3-button xa-property-toggle" data-property="%s">%s</button>', $property, $property_label ) . "\n";
+	foreach ( $properties as $col => $colname )
+		echo "\t\t\t" . sprintf( '<button class="w3-button property-toggle" data-property="%s">%s</button>', $col, $colname ) . "\n";
 ?>
 		</div>
 		<hr style="margin: 0px;" />
@@ -329,11 +395,11 @@ page_body_add( function() {
 <?php
 	$panel = new panel();
 	$panel->add( function( event $event ) {
-		$dt = dtime::from_sql( $event->date, dtime::DATE );
+		$dt = new dtime( $event->event_date_fixed );
 		return $dt->format( 'Y-m' );
 	}, function ( event $event ) {
-		$dt = dtime::from_sql( $event->date, dtime::DATE );
-		echo "\t\t\t" . sprintf( '<button class="w3-button xa-month-toggle" data-month="%s">%s</button>', $dt->format( 'Y-m' ), $dt->month_name() ) . "\n";
+		$dt = new dtime( $event->event_date_fixed );
+		echo "\t\t\t" . sprintf( '<button class="w3-button month-toggle" data-month="%s">%s</button>', $dt->format( 'Y-m' ), $dt->month_name() ) . "\n";
 	} );
 	$panel->html( $events );
 ?>
@@ -343,17 +409,17 @@ page_body_add( function() {
 <script>
 $( function() {
 
-$( '.xa-modal-show' ).click( function() {
+$( '.modal-show' ).click( function() {
 	$( $( this ).data( 'modal' ) ).show();
 } );
 
-$( '.xa-modal' ).click( function() {
+$( '.modal' ).click( function() {
 	$( this ).hide();
 } ).find( '.w3-modal-content' ).click( function( event ) {
 	event.stopPropagation();
 } ).end().
 find( '.w3-hover-red' ).click( function() {
-	$( this ).parents( '.xa-modal' ).hide();
+	$( this ).parents( '.modal' ).hide();
 } );
 
 } );

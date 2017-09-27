@@ -4,12 +4,8 @@ require_once 'php/core.php';
 
 privilege( user::ROLE_BASIC );
 
-$mode = request_var( 'mode' );
-if ( !in_array( $mode, [ 'desktop', 'mobile' ] ) )
-	failure( 'argument_not_valid', 'mode' );
-
 $team = team::request();
-if ( !$cuser->has_team( $team->team_id ) )
+if ( !$cuser->accesses( $team->team_id ) )
 	failure( 'argument_not_valid', 'team_id' );
 
 $child = child::request();
@@ -30,5 +26,5 @@ if ( count( $follows ) === 0 )
 
 success( [
 	'alert' => 'Η εγγραφή παιδιού διαγράφηκε.',
-	'location' => SITE_URL . sprintf( 'presences.php?mode=%s&team_id=%d', $mode, $team->team_id ),
+	'location' => SITE_URL . sprintf( 'presences.php?team_id=%d', $team->team_id ),
 ] );

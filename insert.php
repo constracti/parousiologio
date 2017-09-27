@@ -4,12 +4,8 @@ require_once 'php/core.php';
 
 privilege( user::ROLE_BASIC );
 
-$mode = request_var( 'mode' );
-if ( !in_array( $mode, [ 'desktop', 'mobile' ] ) )
-	failure( 'argument_not_valid', 'mode' );
-
 $team = team::request();
-if ( !$cuser->has_team( $team->team_id ) )
+if ( !$cuser->accesses( $team->team_id ) )
 	failure( 'argument_not_valid', 'team_id' );
 
 $grades = ( function( $grades ) {
@@ -17,7 +13,7 @@ $grades = ( function( $grades ) {
 	foreach ( $grades as $grade )
 		$options[ $grade->grade_id ] = $grade->grade_name;
 	return $options;
-} ) ( $team->get_grades() );
+} ) ( $team->select_grades() );
 
 $fields = [
 	'last_name' => new field( 'last_name', [
@@ -112,7 +108,7 @@ if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
 	$follow->insert();
 	success( [
 		'alert' => 'Η εγγραφή παιδιού προστέθηκε.',
-		'location' => SITE_URL . sprintf( 'update.php?mode=%s&team_id=%d&child_id=%d', $mode, $team->team_id, $child->child_id ),
+		'location' => SITE_URL . sprintf( 'update.php?team_id=%d&child_id=%d', $team->team_id, $child->child_id ),
 	] );
 }
 
@@ -128,13 +124,13 @@ page_script_add( SITE_URL . 'js/birth_year.js' );
 page_nav_add( 'season_dropdown' );
 
 page_nav_add( 'bar_link', [
-	'href' => SITE_URL . sprintf( 'presences.php?mode=%s&team_id=%d', $mode, $team->team_id ),
+	'href' => SITE_URL . sprintf( 'presences.php?team_id=%d', $team->team_id ),
 	'text' => 'παρουσίες',
 	'icon' => 'fa-check-square',
 ] );
 
 page_nav_add( 'bar_link', [
-	'href' => SITE_URL . sprintf( 'insert.php?mode=%s&team_id=%d', $mode, $team->team_id ),
+	'href' => SITE_URL . sprintf( 'insert.php?team_id=%d', $team->team_id ),
 	'text' => 'προσθήκη',
 	'icon' => 'fa-plus',
 ] );

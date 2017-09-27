@@ -38,7 +38,7 @@ $fields = [
 	] ),
 	'first_year' => new field_year( 'first_year', [
 		'placeholder' => 'πρώτο έτος διακονίας',
-		'value' => $child->first_year,
+		'value' => $user->first_year,
 	] ),
 	'address' => new field( 'address', [
 		'placeholder' => 'διεύθυνση',

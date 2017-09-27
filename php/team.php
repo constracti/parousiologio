@@ -18,16 +18,16 @@ class team extends entity {
 	public $season_id;   # integer
 	public $on_sunday;   # integer
 
-	public static function get_admin(): array {
+	public static function select_admin(): array {
 		global $db;
 		global $cseason;
 		$stmt = $db->prepare( '
-SELECT `xa_location`.`location_id`, `xa_location`.`location_name`, `xa_team`.`team_id`, `xa_team`.`team_name`
-FROM `xa_team`
-JOIN `xa_location` ON `xa_location`.`location_id` = `xa_team`.`location_id`
+SELECT `xa_location`.`location_id`, `xa_location`.`location_name`, `xa_location`.`is_swarm`,
+`xa_team`.`team_id`, `xa_team`.`team_name`, `xa_team`.`on_sunday`
+FROM `xa_location`
+LEFT JOIN `xa_team` ON `xa_team`.`location_id` = `xa_location`.`location_id` AND `xa_team`.`season_id` = ?
 LEFT JOIN `xa_target` ON `xa_team`.`team_id` = `xa_target`.`team_id`
-WHERE `xa_team`.`season_id` = ?
-GROUP BY `xa_team`.`team_id`
+GROUP BY `xa_location`.`location_id`, `xa_team`.`team_id`
 ORDER BY `xa_location`.`is_swarm` DESC, `xa_location`.`location_name` ASC, `xa_location`.`location_id` ASC, MIN( `xa_target`.`grade_id` ) ASC, `xa_team`.`team_id` ASC
 		' );
 		$stmt->bind_param( 'i', $cseason->season_id );
@@ -41,7 +41,7 @@ ORDER BY `xa_location`.`is_swarm` DESC, `xa_location`.`location_name` ASC, `xa_l
 		return $teams;
 	}
 
-	public function get_users(): array {
+	public function select_users(): array {
 		global $db;
 		$stmt = $db->prepare( '
 SELECT `xa_user`.`user_id`, `xa_user`.`last_name`, `xa_user`.`first_name`
@@ -61,7 +61,7 @@ ORDER BY `xa_user`.`last_name` ASC, `xa_user`.`first_name` ASC, `xa_user`.`user_
 		return $users;
 	}
 
-	public function get_children(): array {
+	public function select_children(): array {
 		global $db;
 		$stmt = $db->prepare( '
 SELECT `xa_child`.*, `xa_grade`.`grade_name`
@@ -84,7 +84,7 @@ ORDER BY `xa_child`.`last_name` ASC, `xa_child`.`first_name` ASC, `xa_child`.`ch
 		return $children;
 	}
 
-	public function get_events(): array {
+	public function select_events(): array {
 		global $db;
 		$stmt = $db->prepare( '
 SELECT `xa_event`.*, `xa_event`.`date` - INTERVAL ( `xa_event`.`name` IS NULL AND NOT `xa_team`.`on_sunday` ) DAY AS `event_date_fixed`
@@ -108,7 +108,7 @@ ORDER BY `event_date_fixed` ASC, `xa_event`.`event_id` ASC
 		return $events;
 	}
 
-	public function get_grades(): array {
+	public function select_grades(): array {
 		global $db;
 		$stmt = $db->prepare( '
 SELECT `xa_grade`.*
@@ -128,30 +128,33 @@ ORDER BY `xa_grade`.`grade_id` ASC
 		return $grades;
 	}
 
-	public function get_presences( string $mode ): array {
+	public function check_presences(): array {
 		global $db;
-		$sql = '
+		$stmt = $db->prepare( '
 SELECT `xa_child`.`child_id`, `xa_event`.`event_id`, `xa_presence`.`child_id` IS NOT NULL AS `check`
 FROM `xa_team`
-JOIN `xa_follow` ON `xa_team`.`location_id` = `xa_follow`.`location_id` AND `xa_team`.`season_id` = `xa_follow`.`season_id`
-JOIN `xa_child` ON `xa_child`.`child_id` = `xa_follow`.`child_id`
-JOIN `xa_target` ON `xa_team`.`team_id` = `xa_target`.`team_id` AND `xa_follow`.`grade_id` = `xa_target`.`grade_id`
-JOIN `xa_participate` ON `xa_team`.`location_id` = `xa_participate`.`location_id`
-JOIN `xa_event` ON `xa_event`.`event_id` = `xa_participate`.`event_id` AND `xa_event`.`season_id` = `xa_team`.`season_id`
-JOIN `xa_regard` ON `xa_regard`.`grade_id` = `xa_follow`.`grade_id` AND `xa_regard`.`event_id` = `xa_event`.`event_id`
+JOIN `xa_child` ON `xa_child`.`child_id` IN (
+	SELECT `xa_follow`.`child_id`
+	FROM `xa_team`
+	JOIN `xa_follow` ON `xa_follow`.`season_id` = `xa_team`.`season_id` AND `xa_follow`.`location_id` = `xa_team`.`location_id`
+	JOIN `xa_target` ON `xa_target`.`team_id` = `xa_team`.`team_id` AND `xa_target`.`grade_id` = `xa_follow`.`grade_id`
+	WHERE `xa_team`.`team_id` = ?
+)
+JOIN `xa_event` ON `xa_event`.`event_id` IN (
+	SELECT `xa_event`.`event_id`
+	FROM `xa_team`
+	JOIN `xa_target` ON `xa_target`.`team_id` = `xa_team`.`team_id`
+	JOIN `xa_participate` ON `xa_participate`.`location_id` = `xa_team`.`location_id`
+	JOIN `xa_event` ON `xa_event`.`event_id` = `xa_participate`.`event_id` AND `xa_event`.`season_id` = `xa_team`.`season_id`
+	JOIN `xa_regard` ON `xa_regard`.`event_id` = `xa_event`.`event_id` AND `xa_regard`.`grade_id` = `xa_target`.`grade_id`
+	WHERE `xa_team`.`team_id` = ?
+	GROUP BY `xa_event`.`event_id`
+)
 LEFT JOIN `xa_presence` ON `xa_child`.`child_id` = `xa_presence`.`child_id` AND `xa_event`.`event_id` = `xa_presence`.`event_id`
-WHERE `xa_team`.`team_id` = ?
-		';
-		if ( $mode === 'desktop' )
-			$sql .= '
-ORDER BY `xa_child`.`last_name` ASC, `xa_child`.`first_name` ASC, `xa_child`.`child_id` ASC, `xa_event`.`date` - INTERVAL ( `xa_event`.`name` IS NULL AND NOT `xa_team`.`on_sunday` ) DAY ASC, `xa_event`.`event_id` ASC
-			';
-		elseif ( $mode === 'mobile' )
-			$sql .= '
-ORDER BY `xa_event`.`date` - INTERVAL ( `xa_event`.`name` IS NULL AND NOT `xa_team`.`on_sunday` ) DAY DESC, `xa_event`.`event_id` DESC, `xa_child`.`last_name` ASC, `xa_child`.`first_name` ASC, `xa_child`.`child_id` ASC
-			';
-		$stmt = $db->prepare( $sql );
-		$stmt->bind_param( 'i', $this->team_id );
+WHERE `team_id` = ?
+ORDER BY `xa_child`.`last_name` ASC, `xa_child`.`first_name` ASC, `xa_child`.`child_id` ASC,
+`xa_event`.`date` - INTERVAL ( `xa_event`.`name` IS NULL AND NOT `xa_team`.`on_sunday` ) DAY ASC, `xa_event`.`event_id` ASC		' );
+		$stmt->bind_param( 'iii', $this->team_id, $this->team_id, $this->team_id );
 		$stmt->execute();
 		$rslt = $stmt->get_result();
 		$stmt->close();
