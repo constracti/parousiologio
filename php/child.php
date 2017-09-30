@@ -22,6 +22,7 @@ class child extends entity {
 		'address'       => 's',
 		'city'          => 's',
 		'postal_code'   => 's',
+		'meta'          => 's',
 	];
 
 	public $child_id;      # integer, primary key
@@ -43,6 +44,27 @@ class child extends entity {
 	public $address;       # varchar, nullable
 	public $city;          # varchar, nullable
 	public $postal_code;   # varchar, nullable
+	public $meta;          # varchar, nullable
+
+	const COLS = [
+		'home_phone'    => 'σταθερό τηλέφωνο',
+		'mobile_phone'  => 'κινητό τηλέφωνο',
+		'email_address' => 'διεύθυνση email',
+		'school'        => 'σχολείο',
+		'grade_name'    => 'τάξη',
+		'birth_year'    => 'έτος γέννησης',
+		'fath_name'     => 'όνομα πατρός',
+		'fath_mobile'   => 'κινητό πατρός',
+		'fath_occup'    => 'επάγγελμα πατρός',
+		'fath_email'    => 'email πατρός',
+		'moth_name'     => 'όνομα μητρός',
+		'moth_mobile'   => 'κινητό μητρός',
+		'moth_occup'    => 'επάγγελμα μητρός',
+		'moth_email'    => 'email μητρός',
+		'address'       => 'διεύθυνση',
+		'city'          => 'πόλη',
+		'postal_code'   => 'ταχυδρομικός κώδικας',
+	];
 
 	public function insert_event( int $event_id ) {
 		global $db;

@@ -61,14 +61,12 @@ if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
 
 page_title_set( 'Προφίλ' );
 
-page_nav_add( function() {
-?>
-<a class="w3-bar-item w3-button" href="<?= SITE_URL ?>profile.php" title="προφίλ">
-	<span class="fa fa-pencil"></span>
-	<span class="w3-hide-small">προφίλ</span>
-</a>
-<?php
-} );
+page_nav_add( 'bar_link', [
+	'href' => site_href( 'profile.php' ),
+	'text' => 'προφίλ',
+	'icon' => 'fa-pencil',
+	'hide_medium' => FALSE,
+] );
 
 page_body_add( 'form_section', $fields, [
 	'responsive' => 'w3-col m6 s12',

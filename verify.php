@@ -37,6 +37,6 @@ page_title_set( 'Επαλήθευση' );
 	}
 } )();
 
-page_message_add( sprintf( 'Μετάβαση στην <a href="%s">αρχική σελίδα</a>.', SITE_URL ), 'info' );
+page_message_add( sprintf( 'Μετάβαση στην <a href="%s">αρχική σελίδα</a>.', site_href() ), 'info' );
 
 page_html();

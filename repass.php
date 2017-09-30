@@ -28,7 +28,7 @@ if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
 	$mail->addAddress( $user->email_address );
 	$mail->Subject = sprintf( '%s - %s', SITE_NAME, 'επαναφορά κωδικού πρόσβασης' );
 	$mail->msgHTML( implode( mailer::NEWLINE, [
-		sprintf( '<p>Για να επαναφέρεις τον κωδικό πρόσβασης του λογαριασμού σου στο <a href="%s">%s</a>, ακολούθησε τον παρακάτω σύνδεσμο:</p>', SITE_URL, SITE_NAME ),
+		sprintf( '<p>Για να επαναφέρεις τον κωδικό πρόσβασης του λογαριασμού σου στο <a href="%s">%s</a>, ακολούθησε τον παρακάτω σύνδεσμο:</p>', site_href(), SITE_NAME ),
 		sprintf( '<p><a href="%s">%s</a></p>', $vlink->url(), 'επαναφορά κωδικού πρόσβασης' ),
 		'<hr />',
 		'<p><small>Αν η ενέργεια δεν προήλθε από εσένα, αγνόησε το παρόν μήνυμα.</small></p>',
@@ -36,7 +36,7 @@ if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
 	$mail->send();
 	success( [
 		'alert' => 'Ακολούθησε το σύνδεσμο που εστάλη στα εισερχόμενά σου για να επαναφέρεις τον κωδικό πρόσβασης του λογαριασμού σου.',
-		'location' => SITE_URL,
+		'location' => site_href(),
 	] );
 }
 

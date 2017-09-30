@@ -1,8 +1,5 @@
 <?php
 
-# TODO rename `role_id` to `role` and decrease by 1
-# TODO rename `reg_time` to `reg_tm`
-
 class user extends entity {
 
 	const ROLE_UNVER = 1;
@@ -54,12 +51,26 @@ class user extends entity {
 	public $address;       # varchar, nullable
 	public $city;          # varchar, nullable
 	public $postal_code;   # varchar, nullable
-	public $role_id;       # integer, default 1
-	public $reg_time;      # timestamp
-	public $reg_ip;        # varchar
+	public $role_id;       # integer
+	public $reg_time;      # timestamp, nullable
+	public $reg_ip;        # varchar, nullable
 	public $active_time;   # timestamp, nullable
 	public $active_ip;     # varchar, nullable
 	public $meta;          # varchar, nullable
+
+	const COLS = [
+		'last_name'     => 'επώνυμο',
+		'first_name'    => 'όνομα',
+		'home_phone'    => 'σταθερό τηλέφωνο',
+		'mobile_phone'  => 'κινητό τηλέφωνο',
+		'email_address' => 'διεύθυνση email',
+		'occupation'    => 'απασχόληση',
+		'grade_name'    => 'τάξη',
+		'first_year'    => 'πρώτο έτος διακονίας',
+		'address'       => 'διεύθυνση',
+		'city'          => 'πόλη',
+		'postal_code'   => 'ταχυδρομικός κώδικας',
+	];
 
 	public static function select_by_email_address( string $email_address ) {
 		global $db;
@@ -83,31 +94,6 @@ class user extends entity {
 		$stmt->bind_param( 'ss', $type = 'chmail', $email_address );
 		$stmt->execute();
 		$stmt->close();
-	}
-
-	public function select_teams(): array {
-		global $db;
-		global $cseason;
-		$stmt = $db->prepare( '
-SELECT `xa_location`.`location_id`, `xa_location`.`location_name`, `xa_location`.`is_swarm`,
-`xa_team`.`on_sunday`, `xa_team`.`team_id`, `xa_team`.`team_name`
-FROM `xa_team`
-JOIN `xa_location` ON `xa_location`.`location_id` = `xa_team`.`location_id`
-JOIN `xa_access` ON `xa_team`.`team_id` = `xa_access`.`team_id`
-JOIN `xa_target` ON `xa_team`.`team_id` = `xa_target`.`team_id`
-WHERE `xa_access`.`user_id` = ? AND `xa_team`.`season_id` = ?
-GROUP BY `xa_team`.`team_id`
-ORDER BY `xa_location`.`is_swarm` DESC, `xa_location`.`location_name` ASC, MIN( `xa_target`.`grade_id` ) ASC, `xa_team`.`team_id` ASC
-		' );
-		$stmt->bind_param( 'ii', $this->user_id, $cseason->season_id );
-		$stmt->execute();
-		$rslt = $stmt->get_result();
-		$stmt->close();
-		$teams = [];
-		while ( !is_null( $team = $rslt->fetch_object( 'team' ) ) )
-			$teams[] = $team;
-		$rslt->free();
-		return $teams;
 	}
 
 	public function has_team( int $team_id ): bool {
@@ -210,33 +196,5 @@ WHERE `user_id` = ? AND `team_id` IN (
 		$stmt->bind_param( 'ii', $this->user_id, $cseason->season_id );
 		$stmt->execute();
 		$stmt->close();
-	}
-
-
-	/* meta */
-
-	public function get_meta( string $key ) {
-		if ( is_null( $this->meta ) )
-			return NULL;
-		$meta = unserialize( $this->meta );
-		if ( !array_key_exists( $key, $meta ) )
-			return NULL;
-		return $meta[ $key ];
-	}
-
-	public function set_meta( string $key, $value = NULL ) {
-		if ( is_null( $this->meta ) )
-			$meta = [];
-		else
-			$meta = unserialize( $this->meta );
-		if ( is_null( $value ) ) {
-			if ( array_key_exists( $key, $meta ) )
-				unset( $meta[ $key ] );
-			if ( empty( $meta ) )
-				$this->meta = NULL;
-		} else {
-			$meta[ $key ] = $value;
-			$this->meta = serialize( $meta );
-		}
 	}
 }

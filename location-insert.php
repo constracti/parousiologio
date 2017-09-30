@@ -25,7 +25,7 @@ if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
 	$location->insert();
 	success( [
 		'alert' => 'Η περιοχή προστέθηκε.',
-		'location' => SITE_URL . 'location-update.php?location_id=' . $location->location_id,
+		'location' => site_href( 'location-update.php', [ 'location_id' => $location->location_id ] ),
 	] );
 }
 
@@ -37,14 +37,14 @@ if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
 page_title_set( 'Προσθήκη περιοχής' );
 
 page_nav_add( 'bar_link', [
-	'href' => SITE_URL . 'locations.php',
+	'href' => site_href( 'locations.php' ),
 	'text' => 'περιοχές',
 	'icon' => 'fa-globe',
 	'hide_medium' => FALSE,
 ] );
 
 page_nav_add( 'bar_link', [
-	'href' => SITE_URL . 'location-insert.php',
+	'href' => site_href( 'location-insert.php' ),
 	'text' => 'προσθήκη',
 	'icon' => 'fa-plus',
 ] );

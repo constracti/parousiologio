@@ -1,10 +1,5 @@
 <?php
 
-# TODO rename `name` to `description`
-# TODO rename `date` to `event_date`
-
-# TODO check 'smart' queries: LEFT JOIN
-
 class event extends entity {
 
 	const FIELDS = [
@@ -19,29 +14,9 @@ class event extends entity {
 	public $date;      # date
 	public $season_id; # integer
 
-	public static function select_admin(): array {
-		global $db;
-		global $cseason;
-		$stmt = $db->prepare( '
-SELECT `xa_event`.*, `xa_grade`.*
-FROM `xa_event`
-LEFT JOIN `xa_regard` ON `xa_event`.`event_id` = `xa_regard`.`event_id`
-LEFT JOIN `xa_grade` ON `xa_grade`.`grade_id` = `xa_regard`.`grade_id`
-WHERE `xa_event`.`season_id` = ?
-ORDER BY `xa_event`.`date` DESC, `xa_event`.`event_id` DESC, `xa_grade`.`grade_id` ASC
-		' );
-		$stmt->bind_param( 'i', $cseason->season_id );
-		$stmt->execute();
-		$rslt = $stmt->get_result();
-		$stmt->close();
-		$items = [];
-		while ( !is_null( $item = $rslt->fetch_object( 'event' ) ) )
-			$items[] = $item;
-		$rslt->free();
-		return $items;
-	}
+	/* grades */
 
-	public function select_grades(): array {
+	public function check_grades(): array {
 		global $db;
 		$stmt = $db->prepare( '
 SELECT `xa_category`.`category_id`, `xa_category`.`category_name`, `xa_grade`.`grade_id`, `xa_grade`.`grade_name`, `xa_regard`.`event_id` IS NOT NULL AS `check`
@@ -58,27 +33,6 @@ ORDER BY `xa_grade`.`grade_id` ASC
 		$stmt->close();
 		$items = [];
 		while ( !is_null( $item = $rslt->fetch_object( 'grade' ) ) )
-			$items[] = $item;
-		$rslt->free();
-		return $items;
-	}
-
-	public function select_locations(): array {
-		global $db;
-		$stmt = $db->prepare( '
-SELECT `xa_location`.`location_id`, `xa_location`.`location_name`, `xa_location`.`is_swarm`, `xa_participate`.`event_id` IS NOT NULL AS `check`
-FROM `xa_location`
-JOIN `xa_event`
-LEFT JOIN `xa_participate` ON `xa_location`.`location_id` = `xa_participate`.`location_id` AND `xa_event`.`event_id` = `xa_participate`.`event_id`
-WHERE `xa_event`.`event_id` = ?
-ORDER BY `xa_location`.`is_swarm` DESC, `xa_location`.`location_name` ASC
-		' );
-		$stmt->bind_param( 'i', $this->event_id );
-		$stmt->execute();
-		$rslt = $stmt->get_result();
-		$stmt->close();
-		$items = [];
-		while ( !is_null( $item = $rslt->fetch_object( 'location' ) ) )
 			$items[] = $item;
 		$rslt->free();
 		return $items;
@@ -119,6 +73,29 @@ WHERE `xa_grade`.`category_id` = ?
 		$stmt->bind_param( 'i', $this->event_id );
 		$stmt->execute();
 		$stmt->close();
+	}
+
+	/* locations */
+
+	public function check_locations(): array {
+		global $db;
+		$stmt = $db->prepare( '
+SELECT `xa_location`.`location_id`, `xa_location`.`location_name`, `xa_location`.`is_swarm`, `xa_participate`.`event_id` IS NOT NULL AS `check`
+FROM `xa_location`
+JOIN `xa_event`
+LEFT JOIN `xa_participate` ON `xa_location`.`location_id` = `xa_participate`.`location_id` AND `xa_event`.`event_id` = `xa_participate`.`event_id`
+WHERE `xa_event`.`event_id` = ?
+ORDER BY `xa_location`.`is_swarm` DESC, `xa_location`.`location_name` ASC
+		' );
+		$stmt->bind_param( 'i', $this->event_id );
+		$stmt->execute();
+		$rslt = $stmt->get_result();
+		$stmt->close();
+		$items = [];
+		while ( !is_null( $item = $rslt->fetch_object( 'location' ) ) )
+			$items[] = $item;
+		$rslt->free();
+		return $items;
 	}
 
 	public function insert_location( int $location_id ) {

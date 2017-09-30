@@ -26,7 +26,7 @@ if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
 		failure( 'Πληκτρολόγησε το σωστό κωδικό πρόσβασης.' );
 	epoint::write( $user->user_id );
 	success( [
-		'location' => SITE_URL,
+		'location' => site_href(),
 	] );
 }
 
@@ -41,15 +41,15 @@ page_body_add( function() {
 		</div>
 		<div class="w3-container">
 			<div class="w3-section">
-				<a class="w3-button w3-round w3-red" href="<?= SITE_URL ?>oauth2.php?provider=google">
+				<a class="w3-button w3-round w3-red" href="<?= site_href( 'oauth2.php', [ 'provider' => 'google' ] ) ?>">
 					<span class="fa fa-google-plus"></span>
 					<span class="w3-hide-small">Google</span>
 				</a>
-				<a class="w3-button w3-round w3-green" href="<?= SITE_URL ?>oauth2.php?provider=microsoft">
+				<a class="w3-button w3-round w3-green" href="<?= site_href( 'oauth2.php', [ 'provider' => 'microsoft' ] ) ?>">
 					<span class="fa fa-windows"></span>
 					<span class="w3-hide-small">Microsoft</span>
 				</a>
-				<a class="w3-button w3-round w3-purple" href="<?= SITE_URL ?>oauth2.php?provider=yahoo">
+				<a class="w3-button w3-round w3-purple" href="<?= site_href( 'oauth2.php', [ 'provider' => 'yahoo' ] ) ?>">
 					<span class="fa fa-yahoo"></span>
 					<span class="w3-hide-small">Yahoo</span>
 				</a>
@@ -63,8 +63,8 @@ page_body_add( function() {
 page_body_add( 'form_section', $fields, [
 	'header' => '<h3 class="w3-section">είσοδος με τοπικό λογαριασμό</h3>' . "\n",
 	'footer' => '<div class="w3-section w3-clear">' . "\n" .
-		sprintf( '<a class="w3-small w3-left" href="%sregister.php" title="εγγραφή">δεν έχω εγγραφεί</a>', SITE_URL ) . "\n" .
-		sprintf( '<a class="w3-small w3-right" href="%srepass.php" title="επαναφορά κωδικού πρόσβασης">ξέχασα τον κωδικό μου</a>', SITE_URL ) . "\n" .
+		sprintf( '<a class="w3-small w3-left" href="%s" title="εγγραφή">δεν έχω εγγραφεί</a>', site_href( 'register.php' ) ) . "\n" .
+		sprintf( '<a class="w3-small w3-right" href="%s" title="επαναφορά κωδικού πρόσβασης">ξέχασα τον κωδικό μου</a>', site_href( 'repass.php' ) ) . "\n" .
 		'</div>' . "\n",
 	'submit_icon' => 'fa-sign-in',
 	'submit_text' => 'είσοδος',
@@ -78,48 +78,86 @@ page_message_add( 'Περίμενε να εγκριθεί ο λογαριασμ�
 
 page_nav_add( 'season_dropdown' );
 
+define( 'INDEX', TRUE );
+if ( $cuser->role_id >= user::ROLE_OBSER && $cuser->get_meta( 'index' ) === 'list' )
+	require SITE_DIR . 'view.php';
+
+$locations = location::select();
+$teams = team::select();
+$grades = grade::select();
+$items = ( function(): array {
+	global $db;
+	global $cseason;
+	global $cuser;
+	$stmt = $db->prepare( '
+SELECT `xa_location`.`location_id`, `xa_team`.`team_id`, `xa_grade`.`category_id`, `xa_grade`.`grade_id`
+FROM `xa_team`
+JOIN `xa_access` ON `xa_access`.`team_id` = `xa_team`.`team_id` AND `xa_access`.`user_id` = ?
+JOIN `xa_location` ON `xa_location`.`location_id` = `xa_team`.`location_id`
+LEFT JOIN `xa_target` ON `xa_target`.`team_id` = `xa_team`.`team_id`
+JOIN `xa_grade` ON `xa_grade`.`grade_id` = `xa_target`.`grade_id`
+WHERE `xa_team`.`season_id` = ?
+ORDER BY `xa_location`.`is_swarm` DESC, `xa_location`.`location_name` ASC, `xa_location`.`location_id` ASC,
+`xa_target`.`grade_id` ASC, `xa_team`.`team_id` ASC
+	' );
+	$stmt->bind_param( 'ii', $cuser->user_id, $cseason->season_id );
+	$stmt->execute();
+	$rslt = $stmt->get_result();
+	$stmt->close();
+	$items = [];
+	while ( !is_null( $item = $rslt->fetch_object() ) )
+		$items[] = $item;
+	$rslt->free();
+	return $items;
+} )();
+
 $panel = new panel();
-$panel->add( NULL, function( team $team ) {
+$panel->add( NULL, function( $item ) {
 	echo '<section class="flex flex-equal" style="flex-wrap: wrap; justify-content: center; align-items: flex-start;">' . "\n";
-}, function( team $team ) {
+}, function( $item ) {
 	echo '</section>' . "\n";
 } );
-$panel->add( 'location_id', function( team $team ) {
+$panel->add( 'location_id', function ( $item ) {
+	global $locations;
+	$location = $locations[ $item->location_id ];
+	global $teams;
+	$team = $teams[ $item->team_id ];
 	echo '<div class="flex-l4 flex-m6 flex-s12 w3-border w3-theme-l4">' . "\n";
 	echo '<div class="flex w3-theme">' . "\n";
-	echo sprintf( '<div style="font-size: large;">%s</div>', $team->location_name ) . "\n";
-	echo sprintf( '<div style="flex-shrink: 0; text-align: right;">%s<br />%s</div>', $team->is_swarm ? 'ομάδα' : 'κατηχητικό', $team->on_sunday ? 'Κυριακή' : 'Σάββατο' ) . "\n";
+	echo sprintf( '<div style="font-size: large;">%s</div>', $location->location_name ) . "\n";
+	echo sprintf( '<div style="flex-shrink: 0;">%s</div>', $location->is_swarm ? 'ομάδα' : 'κατηχητικό' ) . "\n";
 	echo '</div>' . "\n";
-}, function( team $team ) {
+}, function( $item ) {
 	echo '</div>' . "\n";
 } );
-$panel->add( 'team_id', function( team $team ) {
-	if ( is_null( $team->team_id ) )
-		return;
-	$href = SITE_URL . sprintf( 'presences.php?team_id=%d', $team->team_id );
+$panel->add( 'team_id', function( $item ) {
+	global $teams;
+	$team = $teams[ $item->team_id ];
+	$href = site_href( 'presences.php', [ 'team_id' => $team->team_id ] );
 	echo sprintf( '<a href="%s" class="flex w3-button w3-block w3-border-top w3-left-align" style="white-space: normal;">', $href ) . "\n";
 	echo '<div>' . "\n";
 	echo sprintf( '<div>%s</div>', $team->team_name ) . "\n";
-	echo '<div>' . "\n";
-	$panel = new panel();
-	$panel->add( 'category_id', function( grade $grade ) {
-		echo '<div>' . "\n";
-	}, function( grade $grade ) {
-		echo '</div>' . "\n";		
-	} );
-	$panel->add( 'grade_id', function( grade $grade ) {
-		echo sprintf( '<span class="w3-tag w3-round w3-theme" style="font-size: small;">%s</span>', $grade->grade_name ) . "\n";
-	} );
-	$panel->html( $team->select_grades() );
-	echo '</div>' . "\n";
+}, function( $item ) {
 	echo '</div>' . "\n";
 	echo '</a>' . "\n";
 } );
-if ( $cuser->role_id >= user::ROLE_OBSER && $cuser->get_meta( 'index' ) === 'list' )
-	$teams = team::select_admin();
-else
-	$teams = $cuser->select_teams();
-page_body_add( [ $panel, 'html' ], $teams );
+$panel->add( 'category_id', function( $item ) {
+	if ( is_null( $item->category_id ) )
+		return;
+	echo '<div>' . "\n";
+}, function ( $item ) {
+	if ( is_null( $item->category_id ) )
+		return;
+	echo '</div>' . "\n";
+} );
+$panel->add( 'grade_id', function( $item ) {
+	if ( is_null( $item->grade_id ) )
+		return;
+	global $grades;
+	$grade = $grades[ $item->grade_id ];
+	echo sprintf( '<span class="w3-tag w3-round w3-theme" style="font-size: small;">%s</span>', $grade->grade_name ) . "\n";
+} );
+page_body_add( [ $panel, 'html' ], $items );
 
 }
 

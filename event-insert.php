@@ -29,7 +29,7 @@ if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
 	$event->insert();
 	success( [
 		'alert' => 'Το συμβάν προστέθηκε.',
-		'location' => SITE_URL . 'event-update.php?event_id=' . $event->event_id,
+		'location' => site_href( 'event-update.php', [ 'event_id' => $event->event_id ] ),
 	] );
 }
 

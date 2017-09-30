@@ -2,6 +2,7 @@
 
 require_once COMPOSER_DIR . 'phpmailer/vendor/autoload.php';
 
+# TODO use local email
 # TODO mailer in separate thread
 
 class mailer extends PHPMailer\PHPMailer\PHPMailer {

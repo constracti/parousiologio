@@ -27,7 +27,10 @@ class season extends entity {
 		] );
 		$options = [];
 		foreach ( $seasons as $season )
-			$options[ $season->season_id ] = sprintf( '%d: %s', $season->year, $season->slogan_old );
+			if ( !is_null( $season->slogan_old ) )
+				$options[ $season->season_id ] = sprintf( '%d: %s', $season->year, $season->slogan_old );
+			else
+				$options[ $season->season_id ] = sprintf( '%d', $season->year );
 		return $options;
 	}
 }

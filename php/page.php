@@ -103,7 +103,7 @@ function bar_link( array $arguments = [] ) {
 page_nav_add( function() {
 ?>
 <a class="w3-bar-item w3-button" href="<?= season_href() ?>" title="αρχική">
-	<img src="<?= SITE_URL ?>favicon-256.png" style="height: 24px; width: auto; margin: -4px 0px;" />
+	<img src="<?= site_href( 'favicon-256.png' ) ?>" style="height: 24px; width: auto; margin: -4px 0px;" />
 	<span class="w3-hide-small"><?= SITE_NAME ?></span>
 </a>
 <?php
@@ -119,11 +119,11 @@ page_nav_add( function() {
 	</button>
 	<div class="w3-dropdown-content w3-bar-block w3-theme-l2">
 		<a class="w3-bar-item w3-button" href="https://agonistes.gr/" target="_blank" title="Χαρούμενοι Αγωνιστές">
-			<img src="<?= SITE_URL ?>img/agonistes.png" style="margin: 0px;" />
+			<img src="<?= site_href( 'img/agonistes.png' ) ?>" style="margin: 0px;" />
 			<span>Χαρούμενοι Αγωνιστές</span>
 		</a>
 		<a class="w3-bar-item w3-button" href="https://synathlountes.agonistes.gr/" target="_blank" title="Συναθλούντες">
-			<img src="<?= SITE_URL ?>img/synathlountes.png" style="margin: 0px;" />
+			<img src="<?= site_href( 'img/synathlountes.png' ) ?>" style="margin: 0px;" />
 			<span>Συναθλούντες</span>
 		</a>
 	</div>
@@ -144,13 +144,15 @@ page_nav_add( function() {
 	</button>
 	<div class="w3-dropdown-content w3-bar-block w3-theme-l2">
 <?php
-	bar_link( [
-		'href' => site_href( 'view.php' ),
-		'text' => 'προβολή',
-		'icon' => 'fa-list',
-		'hide_small' => FALSE,
-		'hide_medium' => FALSE,
-	] );
+	if ( $cuser->get_meta( 'index' ) !== 'list' ) {
+		bar_link( [
+			'href' => season_href( 'view.php' ),
+			'text' => 'προβολή',
+			'icon' => 'fa-list',
+			'hide_small' => FALSE,
+			'hide_medium' => FALSE,
+		] );
+	}
 	if ( $cuser->role_id >= user::ROLE_ADMIN ) {
 		bar_link( [
 			'href' => season_href( 'events.php' ),
@@ -201,18 +203,29 @@ page_nav_add( function() {
 		<span class="fa fa-caret-down"></span>
 	</button>
 	<div class="w3-dropdown-content w3-bar-block w3-theme-l2">
-		<a class="w3-bar-item w3-button" href="<?= SITE_URL ?>profile.php" title="προφίλ">
-			<span class="fa fa-pencil"></span>
-			<span>προφίλ</span>
-		</a>
-		<a class="w3-bar-item w3-button" href="<?= SITE_URL ?>settings.php" title="ρυθμίσεις">
-			<span class="fa fa-cog"></span>
-			<span>ρυθμίσεις</span>
-		</a>
-		<a class="w3-bar-item w3-button" href="<?= SITE_URL ?>logout.php" title="έξοδος">
-			<span class="fa fa-sign-out"></span>
-			<span>έξοδος</span>
-		</a>
+<?php
+	bar_link( [
+		'href' => site_href( 'profile.php' ),
+		'text' => 'προφίλ',
+		'icon' => 'fa-pencil',
+		'hide_small' => FALSE,
+		'hide_medium' => FALSE,
+	] );
+	bar_link( [
+		'href' => site_href( 'settings.php' ),
+		'text' => 'ρυθμίσεις',
+		'icon' => 'fa-cog',
+		'hide_small' => FALSE,
+		'hide_medium' => FALSE,
+	] );
+	bar_link( [
+		'href' => site_href( 'logout.php' ),
+		'text' => 'έξοδος',
+		'icon' => 'fa-sign-out',
+		'hide_small' => FALSE,
+		'hide_medium' => FALSE,
+	] );
+?>
 	</div>
 </div>
 <?php
@@ -470,7 +483,7 @@ function page_html() {
 		<meta name="description" content="Παρουσιολόγιο Χαρούμενων Αγωνιστών Αθήνας" />
 		<meta name="keywords" content="παρουσίες, παρουσίες χα, παρουσιολόγιο, χαρούμενοι αγωνιστές, χαρούμενοι, αγωνιστές, παρουσιολόγιο χαρούμενων αγωνιστών, παρουσιολόγιο χα, χα, parousies, parousies xa, parousiologio, xaroumenoi agonistes, xaroumenoi, agonistes, parousiologio xaroumenon agoniston, parousiologio xa, xa" />
 		<title><?= $page_title ?? SITE_NAME ?></title>
-		<link rel="icon" href="<?= SITE_URL ?>favicon-256.png" />
+		<link rel="icon" href="<?= site_href( 'favicon-256.png' ) ?>" />
 <?php
 	foreach ( $page_styles as $style ) {
 ?>
@@ -542,7 +555,7 @@ body>.w3-bar:first-child>.w3-dropdown-hover.w3-right>.w3-dropdown-content {
 		<h1 class="w3-panel w3-content w3-text-theme w3-center"><?= $page_title ?? SITE_NAME ?></h1>
 <?php
 	if ( !is_null( $cuser ) && ( is_null( $cuser->last_name ) || is_null( $cuser->first_name ) ) )
-		page_message_add( sprintf( 'Συμπλήρωσε τα στοιχεία σου στο <a href="%sprofile.php">προφίλ</a>.', SITE_URL ), 'warning' );
+		page_message_add( sprintf( 'Συμπλήρωσε τα στοιχεία σου στο <a href="%s">προφίλ</a>.', site_href( 'profile.php' ) ), 'warning' );
 	foreach ( $page_messages as $message ) {
 ?>
 		<div class="w3-panel w3-content">

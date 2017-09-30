@@ -1,7 +1,5 @@
 <?php
 
-# TODO rename class
-
 class panel {
 
 	public $groups;

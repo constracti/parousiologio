@@ -36,7 +36,7 @@ if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
 	$team->insert();
 	success( [
 		'alert' => 'Η ομάδα προστέθηκε.',
-		'location' => SITE_URL . sprintf( 'team-update.php?team_id=%d', $team->team_id ),
+		'location' => site_href( 'team-update.php', [ 'team_id' => $team->team_id ] ),
 	] );
 }
 

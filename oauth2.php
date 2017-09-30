@@ -12,7 +12,7 @@ switch ( $provider ) {
 		$provider = new League\OAuth2\Client\Provider\Google( [
 			'clientId'     => GOOGLE_CLIENT_ID,
 			'clientSecret' => GOOGLE_CLIENT_SECRET,
-			'redirectUri'  => SITE_URL . 'oauth2.php?provider=google',
+			'redirectUri'  => site_href( 'oauth2.php', [ 'provider' => 'google' ] ),
 		] );
 		$scope = [ 'email' ];
 		break;
@@ -21,7 +21,7 @@ switch ( $provider ) {
 		$provider = new Stevenmaguire\OAuth2\Client\Provider\Microsoft( [
 			'clientId'     => MICROSOFT_CLIENT_ID,
 			'clientSecret' => MICROSOFT_CLIENT_SECRET,
-			'redirectUri'  => SITE_URL . 'oauth2.php?provider=microsoft',
+			'redirectUri'  => site_href( 'oauth2.php', [ 'provider' => 'microsoft' ] ),
 		] );
 		$scope = [ 'wl.emails' ];
 		break;
@@ -30,7 +30,7 @@ switch ( $provider ) {
 		$provider = new Hayageek\OAuth2\Client\Provider\Yahoo( [
 			'clientId'     => YAHOO_CLIENT_ID,
 			'clientSecret' => YAHOO_CLIENT_SECRET,
-			'redirectUri'  => SITE_URL . 'oauth2.php?provider=yahoo',
+			'redirectUri'  => site_href( 'oauth2.php', [ 'provider' => 'yahoo' ] ),
 		] );
 		$scope = [ 'openid' ];
 		break;

@@ -84,21 +84,21 @@ if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
 page_title_set( 'Επεξεργασία χρήστη' );
 
 page_nav_add( 'bar_link', [
-	'href' => SITE_URL . 'users.php',
+	'href' => site_href( 'users.php' ),
 	'text' => 'χρήστες',
 	'icon' => 'fa-user',
 	'hide_medium' => FALSE,
 ] );
 
 page_nav_add( 'bar_link', [
-	'href' => SITE_URL . sprintf( 'user-update.php?user_id=%d', $user->user_id ),
+	'href' => site_href( 'user-update.php', [ 'user_id' => $user->user_id ] ),
 	'text' => 'επεξεργασία',
 	'icon' => 'fa-pencil',
 ] );
 
 page_body_add( 'form_section', $fields, [
 	'responsive' => 'w3-col m6 s12',
-	'delete' => SITE_URL . sprintf( 'user-delete.php?user_id=%d', $user->user_id ),
+	'delete' => site_href( 'user-delete.php', [ 'user_id' => $user->user_id ] ),
 ] );
 
 

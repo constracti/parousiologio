@@ -1,7 +1,5 @@
 <?php
 
-# TODO move `on_sunday` from `team` to `location` - see classes
-
 class team extends entity {
 
 	const FIELDS = [
@@ -17,49 +15,6 @@ class team extends entity {
 	public $team_name;   # varchar
 	public $season_id;   # integer
 	public $on_sunday;   # integer
-
-	public static function select_admin(): array {
-		global $db;
-		global $cseason;
-		$stmt = $db->prepare( '
-SELECT `xa_location`.`location_id`, `xa_location`.`location_name`, `xa_location`.`is_swarm`,
-`xa_team`.`team_id`, `xa_team`.`team_name`, `xa_team`.`on_sunday`
-FROM `xa_location`
-LEFT JOIN `xa_team` ON `xa_team`.`location_id` = `xa_location`.`location_id` AND `xa_team`.`season_id` = ?
-LEFT JOIN `xa_target` ON `xa_team`.`team_id` = `xa_target`.`team_id`
-GROUP BY `xa_location`.`location_id`, `xa_team`.`team_id`
-ORDER BY `xa_location`.`is_swarm` DESC, `xa_location`.`location_name` ASC, `xa_location`.`location_id` ASC, MIN( `xa_target`.`grade_id` ) ASC, `xa_team`.`team_id` ASC
-		' );
-		$stmt->bind_param( 'i', $cseason->season_id );
-		$stmt->execute();
-		$rslt = $stmt->get_result();
-		$stmt->close();
-		$teams = [];
-		while ( !is_null( $team = $rslt->fetch_object( 'team' ) ) )
-			$teams[] = $team;
-		$rslt->free();
-		return $teams;
-	}
-
-	public function select_users(): array {
-		global $db;
-		$stmt = $db->prepare( '
-SELECT `xa_user`.`user_id`, `xa_user`.`last_name`, `xa_user`.`first_name`
-FROM `xa_user`
-JOIN `xa_access` ON `xa_user`.`user_id` = `xa_access`.`user_id`
-WHERE `xa_access`.`team_id` = ?
-ORDER BY `xa_user`.`last_name` ASC, `xa_user`.`first_name` ASC, `xa_user`.`user_id` ASC
-		' );
-		$stmt->bind_param( 'i', $this->team_id );
-		$stmt->execute();
-		$rslt = $stmt->get_result();
-		$stmt->close();
-		$users = [];
-		while ( !is_null( $user = $rslt->fetch_object( 'user' ) ) )
-			$users[ $user->user_id ] = $user;
-		$rslt->free();
-		return $users;
-	}
 
 	public function select_children(): array {
 		global $db;

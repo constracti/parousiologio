@@ -38,20 +38,20 @@ if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
 page_title_set( 'Επεξεργασία περιοχής' );
 
 page_nav_add( 'bar_link', [
-	'href' => SITE_URL . 'locations.php',
+	'href' => site_href( 'locations.php' ),
 	'text' => 'περιοχές',
 	'icon' => 'fa-globe',
 	'hide_medium' => FALSE,
 ] );
 
 page_nav_add( 'bar_link', [
-	'href' => SITE_URL . sprintf( 'location-update.php?location_id=%d', $location->location_id ),
+	'href' => site_href( 'location-update.php', [ 'location_id' => $location->location_id ] ),
 	'text' => 'επεξεργασία',
 	'icon' => 'fa-pencil',
 ] );
 
 page_body_add( 'form_section', $fields, [
-	'delete' => SITE_URL . sprintf( 'location-delete.php?location_id=%d', $location->location_id ),
+	'delete' => site_href( 'location-delete.php', [ 'location_id' => $location->location_id ] ),
 ] );
 
 

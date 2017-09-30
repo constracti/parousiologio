@@ -14,6 +14,14 @@ if ( $cuser->role_id >= user::ROLE_OBSER ) {
 
 if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
 	switch ( request_var( 'action', TRUE ) ) {
+		case NULL:
+			if ( $cuser->role_id >= user::ROLE_OBSER )
+				$cuser->set_meta( 'index', $fields['index']->post() ? 'list' : NULL );
+			$cuser->update();
+			success( [
+				'alert' => 'Οι προτιμήσεις αποθηκεύθηκαν.',
+				'location' => site_href( 'settings.php' ),
+			] );
 		case 'epoint':
 			$epoint = epoint::request();
 			if ( $epoint->user_id !== $cuser->user_id )
@@ -29,10 +37,7 @@ if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
 			$vlink->delete();
 			success();
 		default:
-			if ( $cuser->role_id >= user::ROLE_OBSER )
-				$cuser->set_meta( 'index', $fields['index']->post() ? 'list' : NULL );
-			$cuser->update();
-			success();
+			failure( 'argument_not_valid', 'action' );
 	}
 }
 
@@ -45,8 +50,8 @@ require_once COMPOSER_DIR . 'whichbrowser/vendor/autoload.php';
 
 page_title_set( 'Ρυθμίσεις' );
 
-page_style_add( SITE_URL . 'css/table.css' );
-page_script_add( SITE_URL . 'js/table.js' );
+page_style_add( site_href( 'css/table.css' ) );
+page_script_add( site_href( 'js/table.js' ) );
 
 page_nav_add( 'bar_link', [
 	'href' => site_href( 'settings.php' ),
@@ -59,8 +64,8 @@ page_body_add( function() {
 ?>
 <section class="w3-panel w3-content">
 	<h3>στοιχεία λογαριασμού</h3>
-	<p><a href="<?= SITE_URL ?>chmail.php">διεύθυνση email</a></p>
-	<p><a href="<?= SITE_URL ?>chpass.php">κωδικός πρόσβασης</a></p>
+	<p><a href="<?= site_href( 'chmail.php' ) ?>">διεύθυνση email</a></p>
+	<p><a href="<?= site_href( 'chpass.php' ) ?>">κωδικός πρόσβασης</a></p>
 </section>
 <?php
 } );
@@ -95,10 +100,7 @@ $table->add( 'είσοδοι', function( epoint $epoint ) {
 $table->add( 'ενέργειες', function( epoint $epoint ) {
 	global $cepoint;
 	if ( $epoint->epoint_id !== $cepoint->epoint_id ) {
-		$href = site_href( 'settings.php', [
-			'action' => 'epoint',
-			'epoint_id' => $epoint->epoint_id,
-		] );
+		$href = site_href( 'settings.php', [ 'action' => 'epoint', 'epoint_id' => $epoint->epoint_id ] );
 		echo sprintf( '<a href="%s" class="link link-delete link-ajax" data-remove="tr">', $href ) . "\n";
 		echo '<span class="fa fa-trash"></span>' . "\n";
 		echo '<span>διαγραφή</span>' . "\n";
@@ -157,10 +159,7 @@ $table->add( 'ενεργοποίηση', function( vlink $vlink ) {
 	}
 } );
 $table->add( 'ενέργειες', function( vlink $vlink ) {
-	$href = site_href( 'settings.php', [
-		'action' => 'vlink',
-		'vlink_id' => $vlink->vlink_id
-	] );
+	$href = site_href( 'settings.php', [ 'action' => 'vlink', 'vlink_id' => $vlink->vlink_id ] );
 	echo sprintf( '<a href="%s" class="link link-delete link-ajax" data-remove="tr">', $href ) . "\n";
 	echo '<span class="fa fa-trash"></span>' . "\n";
 	echo '<span>διαγραφή</span>' . "\n";

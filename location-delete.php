@@ -11,7 +11,7 @@ if ( count( team::select( [ 'location_id' => $location->location_id ] ) ) )
 
 $location->delete();
 
-$href = SITE_URL . 'locations.php';
+$href = site_href( 'locations.php' );
 if ( $_SERVER['HTTP_REFERER'] === $href )
 	success();
 

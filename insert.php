@@ -77,6 +77,14 @@ $fields = [
 	'postal_code' => new field_pc( 'postal_code', [
 		'placeholder' => 'ταχυδρομικός κώδικας',
 	] ),
+	'meta_mobile' => new field_select( 'meta_mobile', [
+		'self' => 'παιδιού',
+		'fath' => 'πατρός',
+		'moth' => 'μητρός',
+	], [
+		'placeholder' => 'κινητό ενημέρωσης',
+		'value' => $child->get_meta( 'mobile' ),
+	] ),
 ];
 
 if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
@@ -100,6 +108,7 @@ if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
 	$child->address = $fields['address']->post();
 	$child->city = $fields['city']->post();
 	$child->postal_code = $fields['postal_code']->post();
+	$child->set_meta( 'mobile', $fields['meta_mobile']->post() );
 	$child->insert();
 	$follow->child_id = $child->child_id;
 	$follow->season_id = $team->season_id;
@@ -108,7 +117,7 @@ if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
 	$follow->insert();
 	success( [
 		'alert' => 'Η εγγραφή παιδιού προστέθηκε.',
-		'location' => SITE_URL . sprintf( 'update.php?team_id=%d&child_id=%d', $team->team_id, $child->child_id ),
+		'location' => site_href( 'update.php', [ 'team_id' => $team->team_id, 'child_id' => $child->child_id ] ),
 	] );
 }
 
@@ -119,18 +128,18 @@ if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
 
 page_title_set( 'Προσθήκη' );
 
-page_script_add( SITE_URL . 'js/birth_year.js' );
+page_script_add( site_href( 'js/birth_year.js' ) );
 
 page_nav_add( 'season_dropdown' );
 
 page_nav_add( 'bar_link', [
-	'href' => SITE_URL . sprintf( 'presences.php?team_id=%d', $team->team_id ),
+	'href' => site_href( 'presences.php', [ 'team_id' => $team->team_id ] ),
 	'text' => 'παρουσίες',
 	'icon' => 'fa-check-square',
 ] );
 
 page_nav_add( 'bar_link', [
-	'href' => SITE_URL . sprintf( 'insert.php?team_id=%d', $team->team_id ),
+	'href' => site_href( 'insert.php', [ 'team_id' => $team->team_id ] ),
 	'text' => 'προσθήκη',
 	'icon' => 'fa-plus',
 ] );

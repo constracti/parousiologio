@@ -35,7 +35,7 @@ page_title_set( sprintf( '%s (%s %d)', $team->team_name, $location->location_nam
 page_nav_add( 'season_dropdown' );
 
 page_nav_add( 'bar_link', [
-	'href' => SITE_URL . sprintf( 'presences.php?team_id=%d', $team->team_id ),
+	'href' => site_href( 'presences.php', [ 'team_id', $team->team_id ] ),
 	'text' => 'παρουσίες',
 	'icon' => 'fa-check-square',
 ] );
@@ -43,32 +43,12 @@ page_nav_add( 'bar_link', [
 $children = $team->select_children();
 $events = $team->select_events();
 $presences = $team->check_presences();
-$properties = [
-	'home_phone'    => 'σταθερό τηλέφωνο',
-	'mobile_phone'  => 'κινητό τηλέφωνο',
-	'email_address' => 'διεύθυνση email',
-	'school'        => 'σχολείο',
-	'grade_name'    => 'τάξη',
-	'birth_year'    => 'έτος γέννησης',
-	'fath_name'     => 'όνομα πατρός',
-	'fath_mobile'   => 'κινητό πατρός',
-	'fath_occup'    => 'επάγγελμα πατρός',
-	'fath_email'    => 'email πατρός',
-	'moth_name'     => 'όνομα μητρός',
-	'moth_mobile'   => 'κινητό μητρός',
-	'moth_occup'    => 'επάγγελμα μητρός',
-	'moth_email'    => 'email μητρός',
-	'address'      => 'διεύθυνση',
-	'city'          => 'πόλη',
-	'postal_code'   => 'τ.κ.',
-];
 
 page_body_add( function() {
 	global $team;
 	global $events;
 	global $children;
 	global $presences;
-	global $properties;
 ?>
 <style>
 #presences-sidebar {
@@ -98,12 +78,6 @@ page_body_add( function() {
 #presences-table>*>tr>* {
 	padding: 4px;
 	text-align: left;
-}
-#presences-table>*>tr>.presences-event {
-	text-align: center;
-}
-#presences-table>*>tr>:last-child {
-	text-align: right;
 }
 
 @media (min-width:993px) {
@@ -150,8 +124,11 @@ page_body_add( function() {
 		echo sprintf( '<a class="flex presences-event w3-button w3-border-bottom" data-event="%d">', $event->event_id ) . "\n";
 		echo '<div>' . "\n";
 		echo sprintf( '<time datetime="%s">%s, %s</time>', $dt->format( dtime::DATE ), $dt->weekday_short_name(), $dt->format( 'j/n' ) );
-		if ( !is_null( $event->name ) )
+		$event->title = sprintf( '%s, %s', $dt->weekday_short_name(), $dt->format( 'j/n' ) );
+		if ( !is_null( $event->name ) ) {
 			echo sprintf( ': <span>%s</span>', $event->name ) . "\n";
+			$event->title .= sprintf( ': %s', $event->name );
+		}
 		echo '</div>' . "\n";
 		echo sprintf( '<span class="presences-event-sum" data-event="%d"></span>', $event->event_id ) . "\n";
 		echo '</a>' . "\n";
@@ -162,7 +139,7 @@ page_body_add( function() {
 	echo '<thead class="w3-theme">' . "\n";
 	echo '<tr>' . "\n";
 	echo '<th rowspan="2">ονοματεπώνυμο</th>' . "\n";
-	foreach ( $properties as $col => $colname )
+	foreach ( child::COLS as $col => $colname )
 		echo sprintf( '<th rowspan="2" class="presences-property" data-property="%s">%s</th>', $col, $colname ) . "\n";
 	$panel = new panel();
 	$panel->add( function( event $event ) {
@@ -181,12 +158,12 @@ page_body_add( function() {
 		$month_counter++;
 	} );
 	$panel->html( $events );
-	echo '<th rowspan="2">παρουσίες</th>' . "\n";
+	echo '<th rowspan="2" class="w3-right-align">παρουσίες</th>' . "\n";
 	echo '</tr>' . "\n";
 	echo '<tr>' . "\n";
 	foreach ( $events as $event ) {
 		$dt = new dtime( $event->event_date_fixed );
-		echo sprintf( '<th class="presences-event presences-month" data-event="%d" data-month="%s">%s</th>', $event->event_id, $dt->format( 'Y-m' ), $dt->format( 'j' ) ) . "\n";
+		echo sprintf( '<th class="presences-event presences-month w3-center" data-event="%d" data-month="%s" title="%s">%s</th>', $event->event_id, $dt->format( 'Y-m' ), $event->title, $dt->format( 'j' ) ) . "\n";
 	}
 	echo '</tr>' . "\n";
 	echo '</thead>' . "\n";
@@ -195,22 +172,21 @@ page_body_add( function() {
 	$panel->add( 'child_id', function( $item ) {
 		global $team;
 		global $children;
-		global $properties;
 		$child = $children[ $item->child_id ];
 		echo '<tr class="w3-border-top w3-border-bottom">' . "\n";
-		$href = SITE_URL . sprintf( 'update.php?team_id=%d&child_id=%d', $team->team_id, $child->child_id );
+		$href = site_href( 'update.php', [ 'team_id' => $team->team_id, 'child_id' => $child->child_id ] );
 		echo sprintf( '<td><a href="%s">%s %s</a></td>', $href, $child->last_name, $child->first_name ) . "\n";
-		foreach ( $properties as $col => $colname )
+		foreach ( child::COLS as $col => $colname )
 			echo sprintf( '<td class="presences-property" data-property="%s">%s</td>', $col, $child->$col ) . "\n";
 	}, function( $item ) {
-		echo sprintf( '<td class="presences-child-sum" data-child="%d"></td>', $item->child_id );
+		echo sprintf( '<td class="presences-child-sum w3-right-align" data-child="%d"></td>', $item->child_id );
 		echo '</tr>' . "\n";
 	} );
 	$panel->add( 'event_id', function( $item ) {
 		global $events;
 		$event = $events[ $item->event_id ];
 		$dt = new dtime( $event->event_date_fixed );
-		echo sprintf( '<td class="presences-event presences-month" data-event="%d" data-month="%s">', $item->event_id, $dt->format( 'Y-m' ) ) . "\n";
+		echo sprintf( '<td class="presences-event presences-month w3-center" data-event="%d" data-month="%s" title="%s">', $item->event_id, $dt->format( 'Y-m' ), $event->title ) . "\n";
 		echo sprintf( '<input class="presences-check w3-check" style="margin-top: -8px;" data-child="%d" data-event="%d" type="checkbox"%s />', $item->child_id, $item->event_id, $item->check ? ' checked="checked"' : '' ) . "\n";
 		echo '</td>' . "\n";
 	} );
@@ -219,13 +195,13 @@ page_body_add( function() {
 	echo '<tfoot class="w3-theme">' . "\n";
 	echo '<tr>' . "\n";
 	echo '<td></td>' . "\n";
-	foreach ( $properties as $col => $colname )
+	foreach ( child::COLS as $col => $colname )
 		echo sprintf( '<td class="presences-property" data-property="%s"></td>', $col ) . "\n";
 	foreach ( $events as $event ) {
 		$dt = new dtime( $event->event_date_fixed );
-		echo sprintf( '<td class="presences-event presences-month presences-event-sum" data-event="%d" data-month="%s"></td>', $event->event_id, $dt->format( 'Y-m' ) ) . "\n";
+		echo sprintf( '<td class="presences-event presences-month presences-event-sum w3-center" data-event="%d" data-month="%s" title="%s"></td>', $event->event_id, $dt->format( 'Y-m' ), $event->title ) . "\n";
 	}
-	echo '<td class="presences-total-sum"></td>' . "\n";
+	echo '<td class="presences-total-sum w3-right-align"></td>' . "\n";
 	echo '</tr>' . "\n";
 	echo '</tfoot>' . "\n";
 	echo '</table>' . "\n";
@@ -363,16 +339,15 @@ $( '.month-toggle' ).each( function() {
 page_body_add( function() {
 	global $team;
 	global $events;
-	global $properties;
 ?>
 <section class="action">
 	<button class="w3-button w3-circle w3-theme modal-show" data-modal="#modal-view" title="προβολή">
 		<span class="fa fa-eye"></span>
 	</button>
-	<a href="<?= SITE_URL ?>download.php?team_id=<?= $team->team_id ?>" class="w3-button w3-circle w3-theme" title="μεταφόρτωση">
+	<a href="<?= site_href( 'download.php', [ 'team_id' => $team->team_id ] ) ?>" class="w3-button w3-circle w3-theme" title="μεταφόρτωση">
 		<span class="fa fa-download"></span>
 	</a>
-	<a href="<?= SITE_URL ?>insert.php?team_id=<?= $team->team_id ?>" class="w3-button w3-circle w3-theme-action" title="προσθήκη">
+	<a href="<?= site_href( 'insert.php', [ 'team_id' => $team->team_id ] ) ?>" class="w3-button w3-circle w3-theme-action" title="προσθήκη">
 		<span class="fa fa-plus"></span>
 	</a>
 </section>
@@ -386,7 +361,7 @@ page_body_add( function() {
 		</div>
 		<div class="w3-padding">
 <?php
-	foreach ( $properties as $col => $colname )
+	foreach ( child::COLS as $col => $colname )
 		echo "\t\t\t" . sprintf( '<button class="w3-button property-toggle" data-property="%s">%s</button>', $col, $colname ) . "\n";
 ?>
 		</div>

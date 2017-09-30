@@ -40,7 +40,7 @@ if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
 page_title_set( 'Ομάδες χρήστη' );
 
 page_nav_add( 'bar_link', [
-	'href' => SITE_URL . 'users.php',
+	'href' => site_href( 'users.php' ),
 	'text' => 'χρήστες',
 	'icon' => 'fa-user',
 	'hide_medium' => FALSE,

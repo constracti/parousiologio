@@ -12,50 +12,89 @@ page_nav_add( 'season_dropdown', [
 	'icon' => 'fa-calendar-check-o',
 ] );
 
-$events = event::select_admin();
+$events = event::select( [
+	'season_id' => $cseason->season_id,
+] );
+$grades = grade::select();
+$items = ( function(): array {
+	global $db;
+	global $cseason;
+	$stmt = $db->prepare( '
+SELECT `xa_event`.`event_id`, `xa_grade`.`category_id`, `xa_regard`.`grade_id`
+FROM `xa_event`
+LEFT JOIN `xa_regard` ON `xa_regard`.`event_id` = `xa_event`.`event_id`
+LEFT JOIN `xa_grade` ON `xa_grade`.`grade_id` = `xa_regard`.`grade_id`
+WHERE `xa_event`.`season_id` = ?
+ORDER BY `xa_event`.`date` DESC, `xa_event`.`event_id` DESC, `xa_regard`.`grade_id` ASC
+	' );
+	$stmt->bind_param( 'i', $cseason->season_id );
+	$stmt->execute();
+	$rslt = $stmt->get_result();
+	$stmt->close();
+	$items = [];
+	while ( !is_null( $item = $rslt->fetch_object() ) )
+		$items[] = $item;
+	$rslt->free();
+	return $items;
+} )();
+
 $panel = new panel();
-$panel->add( function( event $event ) {
-	$dt = dtime::from_sql( $event->date, dtime::DATE );
+$panel->add( function( $item ) {
+	global $events;
+	$event = $events[ $item->event_id ];
+	$dt = new dtime( $event->date );
 	return $dt->format( 'Y-m' );
-}, function( event $event ) {
-	$dt = dtime::from_sql( $event->date, dtime::DATE );
+}, function( $item ) {
+	global $events;
+	$event = $events[ $item->event_id ];
+	$dt = new dtime( $event->date );
 	echo '<section class="w3-panel w3-content">' . "\n";
 	echo '<ul class="w3-ul w3-border w3-theme-l4">' . "\n";
 	echo '<li class="flex w3-theme">' . "\n";
 	echo sprintf( '<div style="font-size: large;">%s %s</div>', $dt->month_name(), $dt->format( 'Y' ) ) . "\n";
 	echo '</li>' . "\n";
-}, function( event $event ) {
+}, function( $item ) {
 	echo '</ul>' . "\n";
 	echo '</section>' . "\n";
 } );
-$panel->add( 'event_id', function( event $event ) {
-	$dt = dtime::from_sql( $event->date, dtime::DATE );
+$panel->add( 'event_id', function( $item ) {
+	global $events;
+	$event = $events[ $item->event_id ];
+	$dt = new dtime( $event->date );
 	echo '<li class="flex">' . "\n";
 	echo '<div>' . "\n";
 	echo sprintf( '<span class="w3-tag w3-round w3-theme-action" style="font-size: small;">%s, %s</span>', $dt->weekday_short_name(), $dt->format( 'j' ) ) . "\n";
 	if ( !is_null( $event->name ) )
 		echo sprintf( '<span>%s</span>', $event->name ) . "\n";
-}, function( event $event ) {
+}, function( $item ) {
+	global $events;
+	$event = $events[ $item->event_id ];
 	echo '</div>' . "\n";
 	echo '<div style="flex-shrink: 0;">' . "\n";
-	$href = SITE_URL . sprintf( 'event-update.php?event_id=%d', $event->event_id );
+	$href = site_href( 'event-update.php', [ 'event_id' => $event->event_id ] );
 	echo sprintf( '<a href="%s" class="w3-button w3-round w3-green" title="επεξεργασία"><span class="fa fa-pencil"></span></a>', $href ) . "\n";
-	$href = SITE_URL . sprintf( 'event-delete.php?event_id=%d', $event->event_id );
+	$href = site_href( 'event-delete.php', [ 'event_id' => $event->event_id ] );
 	echo sprintf( '<a href="%s" class="w3-button w3-round w3-red link-ajax" title="διαγραφή" data-confirm="οριστική διαγραφή;" data-remove="li"><span class="fa fa-trash"></span></a>', $href ) . "\n";
 	echo '</div>' . "\n";
 	echo '</li>' . "\n";
 } );
-$panel->add( 'category_id', function( event $event ) {
+$panel->add( 'category_id', function( $item ) {
+	if ( is_null( $item->category_id ) )
+		return;
 	echo '<div>' . "\n";
-}, function( event $event ) {
+}, function($item ) {
+	if ( is_null( $item->category_id ) )
+		return;
 	echo '</div>' . "\n";
 } );
-$panel->add( 'grade_id', function( event $event ) {
-	if ( is_null( $event->grade_id ) )
+$panel->add( 'grade_id', function( $item ) {
+	if ( is_null( $item->grade_id ) )
 		return;
-	echo sprintf( '<span class="w3-tag w3-round w3-theme" style="font-size: small;">%s</span>', $event->grade_name ) . "\n";
+	global $grades;
+	$grade = $grades[ $item->grade_id ];
+	echo sprintf( '<span class="w3-tag w3-round w3-theme" style="font-size: small;">%s</span>', $grade->grade_name ) . "\n";
 } );
-page_body_add( [ $panel, 'html' ], $events );
+page_body_add( [ $panel, 'html' ], $items );
 
 page_body_add( function() {
 ?>

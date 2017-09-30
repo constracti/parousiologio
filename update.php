@@ -106,6 +106,14 @@ $fields = [
 		'placeholder' => 'ταχυδρομικός κώδικας',
 		'value' => $child->postal_code,
 	] ),
+	'meta_mobile' => new field_select( 'meta_mobile', [
+		'self' => 'παιδιού',
+		'fath' => 'πατρός',
+		'moth' => 'μητρός',
+	], [
+		'placeholder' => 'κινητό ενημέρωσης',
+		'value' => $child->get_meta( 'mobile' ),
+	] ),
 ];
 
 if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
@@ -127,6 +135,7 @@ if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
 	$child->address = $fields['address']->post();
 	$child->city = $fields['city']->post();
 	$child->postal_code = $fields['postal_code']->post();
+	$child->set_meta( 'mobile', $fields['meta_mobile']->post() );
 	$child->update();
 	$follow->grade_id = $fields['grade_id']->post();
 	$follow->update();
@@ -142,18 +151,18 @@ if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
 
 page_title_set( 'Επεξεργασία' );
 
-page_script_add( SITE_URL . 'js/birth_year.js' );
+page_script_add( site_href( 'js/birth_year.js' ) );
 
 page_nav_add( 'season_dropdown' );
 
 page_nav_add( 'bar_link', [
-	'href' => SITE_URL . sprintf( 'presences.php?team_id=%d', $team->team_id ),
+	'href' => site_href( 'presences.php', [ 'team_id' => $team->team_id ] ),
 	'text' => 'παρουσίες',
 	'icon' => 'fa-check-square',
 ] );
 
 page_nav_add( 'bar_link', [
-	'href' => SITE_URL . sprintf( 'update.php?team_id=%d&child_id=%d', $team->team_id, $child->child_id ),
+	'href' => site_href( 'update.php', [ 'team_id' => $team->team_id, 'child_id' => $child->child_id ] ),
 	'text' => 'επεξεργασία',
 	'icon' => 'fa-pencil',
 ] );
@@ -161,7 +170,7 @@ page_nav_add( 'bar_link', [
 page_body_add( 'form_section', $fields, [
 	'full_screen' => TRUE,
 	'responsive' => 'w3-col l3 m6 s12',
-	'delete' => SITE_URL . sprintf( 'delete.php?team_id=%d&child_id=%d', $team->team_id, $child->child_id ),
+	'delete' => site_href( 'delete.php', [ 'team_id' => $team->team_id, 'child_id' => $child->child_id ] ),
 ] );
 
 

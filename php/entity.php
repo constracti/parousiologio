@@ -174,4 +174,31 @@ abstract class entity {
 			return NULL;
 		failure( 'argument_not_valid', $key );
 	}
+
+	/* meta */
+
+	public function get_meta( string $key ) {
+		if ( is_null( $this->meta ) )
+			return NULL;
+		$meta = unserialize( $this->meta );
+		if ( !array_key_exists( $key, $meta ) )
+			return NULL;
+		return $meta[ $key ];
+	}
+
+	public function set_meta( string $key, $value = NULL ) {
+		if ( is_null( $this->meta ) )
+			$meta = [];
+		else
+			$meta = unserialize( $this->meta );
+		if ( is_null( $value ) ) {
+			if ( array_key_exists( $key, $meta ) )
+				unset( $meta[ $key ] );
+			if ( empty( $meta ) )
+				$this->meta = NULL;
+		} else {
+			$meta[ $key ] = $value;
+			$this->meta = serialize( $meta );
+		}
+	}
 }

@@ -26,5 +26,5 @@ if ( count( $follows ) === 0 )
 
 success( [
 	'alert' => 'Η εγγραφή παιδιού διαγράφηκε.',
-	'location' => SITE_URL . sprintf( 'presences.php?team_id=%d', $team->team_id ),
+	'location' => site_href( 'presences.php', [ 'team_id' => $team->team_id ] ),
 ] );

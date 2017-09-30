@@ -33,7 +33,7 @@ class vlink extends entity {
 	public $exp_tm;   # timestamp
 
 	public function url(): string {
-		return sprintf( '%sverify.php?vlink_id=%d&code=%s', SITE_URL, $this->vlink_id, $this->code );
+		return site_href( 'verify.php', [ 'vlink_id' => $this->vlink_id, 'code' => $this->code ] );
 	}
 
 	public static function write( int $user_id, string $type, $data = NULL ): self {
