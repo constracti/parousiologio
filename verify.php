@@ -17,7 +17,7 @@ page_title_set( 'Επαλήθευση' );
 	$vlink->read();
 	switch ( $vlink->type ) {
 		case 'register':
-			$user->role_id = user::ROLE_GUEST;
+			$user->role = user::ROLE_GUEST;
 			$user->update();
 			$user->inform();
 			page_message_add( 'Η εγγραφή σου ολοκληρώθηκε επιτυχώς. Μπορείς πλέον να συνδεθείς.', 'success' );

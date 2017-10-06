@@ -3,16 +3,16 @@
 class event extends entity {
 
 	const FIELDS = [
-		'event_id'  => 'i',
-		'name'      => 's',
-		'date'      => 's',
-		'season_id' => 'i',
+		'event_id'   => 'i',
+		'event_name' => 's',
+		'event_date' => 's',
+		'season_id'  => 'i',
 	];
 
-	public $event_id;  # integer, primary key
-	public $name;      # varchar, nullable
-	public $date;      # date
-	public $season_id; # integer
+	public $event_id;   # integer, primary key
+	public $event_name; # varchar, nullable
+	public $event_date; # date
+	public $season_id;  # integer
 
 	/* grades */
 

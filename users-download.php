@@ -30,7 +30,7 @@ foreach ( array_values( $cols ) as $c => $colname )
 	$sheet->setCellValueByColumnAndRow( $c, $r, $colname );
 
 foreach ( $users as $user ) {
-	if ( $user->role_id < user::ROLE_BASIC )
+	if ( $user->role < user::ROLE_BASIC )
 		continue;
 	$r++;
 	foreach ( array_keys( $cols ) as $c => $col )

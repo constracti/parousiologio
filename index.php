@@ -30,8 +30,6 @@ if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
 	] );
 }
 
-page_title_set( 'Είσοδος' );
-
 page_body_add( function() {
 ?>
 <section class="w3-panel w3-content">
@@ -42,10 +40,10 @@ page_body_add( function() {
 		<div class="w3-container">
 			<div class="w3-section">
 				<a class="w3-button w3-round w3-red" href="<?= site_href( 'oauth2.php', [ 'provider' => 'google' ] ) ?>">
-					<span class="fa fa-google-plus"></span>
+					<span class="fa fa-google"></span>
 					<span class="w3-hide-small">Google</span>
 				</a>
-				<a class="w3-button w3-round w3-green" href="<?= site_href( 'oauth2.php', [ 'provider' => 'microsoft' ] ) ?>">
+				<a class="w3-button w3-round w3-blue" href="<?= site_href( 'oauth2.php', [ 'provider' => 'microsoft' ] ) ?>">
 					<span class="fa fa-windows"></span>
 					<span class="w3-hide-small">Microsoft</span>
 				</a>
@@ -70,7 +68,7 @@ page_body_add( 'form_section', $fields, [
 	'submit_text' => 'είσοδος',
 ] );
 
-} elseif ( $cuser->role_id === user::ROLE_GUEST ) {
+} elseif ( $cuser->role === user::ROLE_GUEST ) {
 
 page_message_add( 'Περίμενε να εγκριθεί ο λογαριασμός σου από τη διαχείριση.', 'warning' );
 
@@ -79,7 +77,7 @@ page_message_add( 'Περίμενε να εγκριθεί ο λογαριασμ�
 page_nav_add( 'season_dropdown' );
 
 define( 'INDEX', TRUE );
-if ( $cuser->role_id >= user::ROLE_OBSER && $cuser->get_meta( 'index' ) === 'list' )
+if ( $cuser->role >= user::ROLE_OBSER && $cuser->get_meta( 'index' ) === 'list' )
 	require SITE_DIR . 'view.php';
 
 $locations = location::select();
@@ -160,5 +158,13 @@ $panel->add( 'grade_id', function( $item ) {
 page_body_add( [ $panel, 'html' ], $items );
 
 }
+
+page_body_add( function() {
+	echo '<footer class="w3-panel w3-center w3-small">' . "\n";
+	echo '<span class="fa fa-envelope"></span>' . "\n";
+	echo '<span>επικοινωνία:</span>' . "\n";
+	echo sprintf( '<a href="mailto:%s">%s</a>', MAIL_USER, MAIL_USER ) . "\n";
+	echo '</footer>' . "\n";
+} );
 
 page_html();

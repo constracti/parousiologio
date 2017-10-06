@@ -7,12 +7,12 @@ privilege( user::ROLE_ADMIN );
 $user = user::request();
 
 $roles = user::ROLES;
-if ( $user->role_id === user::ROLE_UNVER )
+if ( $user->role === user::ROLE_UNVER )
 	$roles = array_intersect_key( $roles, array_fill_keys( [ user::ROLE_UNVER ], NULL ) );
 else
 	unset( $roles[ user::ROLE_UNVER ] );
 foreach ( $roles as $role => $text )
-	if ( $role > $cuser->role_id )
+	if ( $role > $cuser->role )
 		unset( $roles[ $role ] );
 
 $fields = [
@@ -52,10 +52,10 @@ $fields = [
 		'placeholder' => 'ταχυδρομικός κώδικας',
 		'value' => $user->postal_code,
 	] ),
-	'role_id' => new field_select( 'role_id', $roles, [
+	'role' => new field_select( 'role', $roles, [
 		'placeholder' => 'δικαιώματα',
 		'required' => TRUE,
-		'value' => $user->role_id,
+		'value' => $user->role,
 	] ),
 ];
 
@@ -69,7 +69,7 @@ if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
 	$user->address = $fields['address']->post();
 	$user->city = $fields['city']->post();
 	$user->postal_code = $fields['postal_code']->post();
-	$role = $fields['role_id']->post();
+	$user->role = $fields['role']->post();
 	$user->update();
 	success( [
 		'alert' => 'Ο χρήστης ενημερώθηκε.',

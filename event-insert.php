@@ -5,10 +5,10 @@ require_once 'php/core.php';
 privilege( user::ROLE_ADMIN );
 
 $fields = [
-	'name' => new field( 'name', [
+	'event_name' => new field( 'event_name', [
 		'placeholder' => 'περιγραφή',
 	] ),
-	'date' => new field( 'date', [
+	'event_date' => new field( 'event_date', [
 		'type' => 'date',
 		'placeholder' => 'ημερομηνία',
 		'required' => TRUE,
@@ -23,8 +23,8 @@ $fields = [
 
 if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
 	$event = new event();
-	$event->name = $fields['name']->post();
-	$event->date = $fields['date']->post();
+	$event->event_name = $fields['event_name']->post();
+	$event->event_date = $fields['event_date']->post();
 	$event->season_id = $fields['season_id']->post();
 	$event->insert();
 	success( [

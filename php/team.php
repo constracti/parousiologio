@@ -42,7 +42,7 @@ ORDER BY `xa_child`.`last_name` ASC, `xa_child`.`first_name` ASC, `xa_child`.`ch
 	public function select_events(): array {
 		global $db;
 		$stmt = $db->prepare( '
-SELECT `xa_event`.*, `xa_event`.`date` - INTERVAL ( `xa_event`.`name` IS NULL AND NOT `xa_team`.`on_sunday` ) DAY AS `event_date_fixed`
+SELECT `xa_event`.*, `xa_event`.`event_date` - INTERVAL ( `xa_event`.`event_name` IS NULL AND NOT `xa_team`.`on_sunday` ) DAY AS `event_date_fixed`
 FROM `xa_team`
 JOIN `xa_target` ON `xa_team`.`team_id` = `xa_target`.`team_id`
 JOIN `xa_participate` ON `xa_team`.`location_id` = `xa_participate`.`location_id`
@@ -108,7 +108,7 @@ JOIN `xa_event` ON `xa_event`.`event_id` IN (
 LEFT JOIN `xa_presence` ON `xa_child`.`child_id` = `xa_presence`.`child_id` AND `xa_event`.`event_id` = `xa_presence`.`event_id`
 WHERE `team_id` = ?
 ORDER BY `xa_child`.`last_name` ASC, `xa_child`.`first_name` ASC, `xa_child`.`child_id` ASC,
-`xa_event`.`date` - INTERVAL ( `xa_event`.`name` IS NULL AND NOT `xa_team`.`on_sunday` ) DAY ASC, `xa_event`.`event_id` ASC		' );
+`xa_event`.`event_date` - INTERVAL ( `xa_event`.`event_name` IS NULL AND NOT `xa_team`.`on_sunday` ) DAY ASC, `xa_event`.`event_id` ASC		' );
 		$stmt->bind_param( 'iii', $this->team_id, $this->team_id, $this->team_id );
 		$stmt->execute();
 		$rslt = $stmt->get_result();

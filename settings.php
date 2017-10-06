@@ -5,7 +5,7 @@ require_once 'php/core.php';
 privilege( user::ROLE_GUEST );
 
 $fields = [];
-if ( $cuser->role_id >= user::ROLE_OBSER ) {
+if ( $cuser->role >= user::ROLE_OBSER ) {
 	$fields['index'] = new field_checkbox( 'index', [
 		'placeholder' => 'προβολή όλων των ομάδων στην αρχική σελίδα',
 		'value' => $cuser->get_meta( 'index' ) === 'list',
@@ -15,7 +15,7 @@ if ( $cuser->role_id >= user::ROLE_OBSER ) {
 if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
 	switch ( request_var( 'action', TRUE ) ) {
 		case NULL:
-			if ( $cuser->role_id >= user::ROLE_OBSER )
+			if ( $cuser->role >= user::ROLE_OBSER )
 				$cuser->set_meta( 'index', $fields['index']->post() ? 'list' : NULL );
 			$cuser->update();
 			success( [

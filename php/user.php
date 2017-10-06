@@ -2,12 +2,12 @@
 
 class user extends entity {
 
-	const ROLE_UNVER = 1;
-	const ROLE_GUEST = 2;
-	const ROLE_BASIC = 3;
-	const ROLE_OBSER = 4;
-	const ROLE_ADMIN = 5;
-	const ROLE_SUPER = 6;
+	const ROLE_UNVER = 0;
+	const ROLE_GUEST = 1;
+	const ROLE_BASIC = 2;
+	const ROLE_OBSER = 3;
+	const ROLE_ADMIN = 4;
+	const ROLE_SUPER = 5;
 
 	const ROLES = [
 		user::ROLE_UNVER => 'εγγεγραμμένος',
@@ -31,11 +31,11 @@ class user extends entity {
 		'address'       => 's',
 		'city'          => 's',
 		'postal_code'   => 's',
-		'role_id'       => 'i',
-		'reg_time'      => 's',
+		'role'          => 'i',
+		'reg_tm'        => 's',
 		'reg_ip'        => 's',
-		'active_time'   => 's',
-		'active_ip'     => 's',
+		'act_tm'        => 's',
+		'act_ip'        => 's',
 		'meta'          => 's',
 	];
 
@@ -51,11 +51,11 @@ class user extends entity {
 	public $address;       # varchar, nullable
 	public $city;          # varchar, nullable
 	public $postal_code;   # varchar, nullable
-	public $role_id;       # integer
-	public $reg_time;      # timestamp, nullable
+	public $role;          # integer
+	public $reg_tm;        # timestamp, nullable
 	public $reg_ip;        # varchar, nullable
-	public $active_time;   # timestamp, nullable
-	public $active_ip;     # varchar, nullable
+	public $act_tm;        # timestamp, nullable
+	public $act_ip;        # varchar, nullable
 	public $meta;          # varchar, nullable
 
 	const COLS = [
@@ -74,8 +74,8 @@ class user extends entity {
 
 	public static function select_by_email_address( string $email_address ) {
 		global $db;
-		$stmt = $db->prepare( 'SELECT `xa_user`.* FROM `xa_user` WHERE `email_address` = ? AND `role_id` > ? LIMIT 1' );
-		$stmt->bind_param( 'si', $email_address, $role_id = user::ROLE_UNVER );
+		$stmt = $db->prepare( 'SELECT `xa_user`.* FROM `xa_user` WHERE `email_address` = ? AND `role` > ? LIMIT 1' );
+		$stmt->bind_param( 'si', $email_address, $role = user::ROLE_UNVER );
 		$stmt->execute();
 		$rslt = $stmt->get_result();
 		$stmt->close();
@@ -86,8 +86,8 @@ class user extends entity {
 
 	public static function clear_by_email_address( string $email_address ) {
 		global $db;
-		$stmt = $db->prepare( 'DELETE FROM `xa_user` WHERE `email_address` = ? AND `role_id` = ?' );
-		$stmt->bind_param( 'si', $email_address, $role_id = user::ROLE_UNVER );
+		$stmt = $db->prepare( 'DELETE FROM `xa_user` WHERE `email_address` = ? AND `role` = ?' );
+		$stmt->bind_param( 'si', $email_address, $role = user::ROLE_UNVER );
 		$stmt->execute();
 		$stmt->close();
 		$stmt = $db->prepare( 'DELETE FROM `xa_vlink` WHERE `type` = ? AND `data` = ? AND `act_tm` IS NOT NULL' );
@@ -109,7 +109,7 @@ class user extends entity {
 	}
 
 	public function accesses( int $team_id ): bool {
-		return $this->role_id >= user::ROLE_OBSER || $this->has_team( $team_id );
+		return $this->role >= user::ROLE_OBSER || $this->has_team( $team_id );
 	}
 
 	public function inform() {

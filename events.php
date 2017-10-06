@@ -25,7 +25,7 @@ FROM `xa_event`
 LEFT JOIN `xa_regard` ON `xa_regard`.`event_id` = `xa_event`.`event_id`
 LEFT JOIN `xa_grade` ON `xa_grade`.`grade_id` = `xa_regard`.`grade_id`
 WHERE `xa_event`.`season_id` = ?
-ORDER BY `xa_event`.`date` DESC, `xa_event`.`event_id` DESC, `xa_regard`.`grade_id` ASC
+ORDER BY `xa_event`.`event_date` DESC, `xa_event`.`event_id` DESC, `xa_regard`.`grade_id` ASC
 	' );
 	$stmt->bind_param( 'i', $cseason->season_id );
 	$stmt->execute();
@@ -42,12 +42,12 @@ $panel = new panel();
 $panel->add( function( $item ) {
 	global $events;
 	$event = $events[ $item->event_id ];
-	$dt = new dtime( $event->date );
+	$dt = new dtime( $event->event_date );
 	return $dt->format( 'Y-m' );
 }, function( $item ) {
 	global $events;
 	$event = $events[ $item->event_id ];
-	$dt = new dtime( $event->date );
+	$dt = new dtime( $event->event_date );
 	echo '<section class="w3-panel w3-content">' . "\n";
 	echo '<ul class="w3-ul w3-border w3-theme-l4">' . "\n";
 	echo '<li class="flex w3-theme">' . "\n";
@@ -60,12 +60,12 @@ $panel->add( function( $item ) {
 $panel->add( 'event_id', function( $item ) {
 	global $events;
 	$event = $events[ $item->event_id ];
-	$dt = new dtime( $event->date );
+	$dt = new dtime( $event->event_date );
 	echo '<li class="flex">' . "\n";
 	echo '<div>' . "\n";
 	echo sprintf( '<span class="w3-tag w3-round w3-theme-action" style="font-size: small;">%s, %s</span>', $dt->weekday_short_name(), $dt->format( 'j' ) ) . "\n";
-	if ( !is_null( $event->name ) )
-		echo sprintf( '<span>%s</span>', $event->name ) . "\n";
+	if ( !is_null( $event->event_name ) )
+		echo sprintf( '<span>%s</span>', $event->event_name ) . "\n";
 }, function( $item ) {
 	global $events;
 	$event = $events[ $item->event_id ];

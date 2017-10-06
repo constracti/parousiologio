@@ -133,7 +133,7 @@ page_nav_add( function() {
 
 page_nav_add( function() {
 	global $cuser;
-	if ( is_null( $cuser ) || $cuser->role_id < user::ROLE_OBSER )
+	if ( is_null( $cuser ) || $cuser->role < user::ROLE_OBSER )
 		return;
 ?>
 <div class="w3-dropdown-hover w3-right">
@@ -153,7 +153,7 @@ page_nav_add( function() {
 			'hide_medium' => FALSE,
 		] );
 	}
-	if ( $cuser->role_id >= user::ROLE_ADMIN ) {
+	if ( $cuser->role >= user::ROLE_ADMIN ) {
 		bar_link( [
 			'href' => season_href( 'events.php' ),
 			'text' => 'συμβάντα',
@@ -360,6 +360,7 @@ $( '.form-ajax' ).submit( function() {
 }
 
 page_body_add( function() {
+	# TODO link and link-delete style like w3css
 ?>
 <style>
 .link {

@@ -36,8 +36,8 @@ if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
 	$user->password_hash = password_hash( $password, PASSWORD_DEFAULT );
 	$user->last_name = $last_name;
 	$user->first_name = $first_name;
-	$user->role_id = user::ROLE_UNVER;
-	$user->reg_time = dtime::php2sql( $_SERVER['REQUEST_TIME'] );
+	$user->role = user::ROLE_UNVER;
+	$user->reg_tm = dtime::php2sql( $_SERVER['REQUEST_TIME'] );
 	$user->reg_ip = $_SERVER['REMOTE_ADDR'];
 	$user->insert();
 	$vlink = vlink::write( $user->user_id, 'register' );

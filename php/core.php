@@ -138,15 +138,15 @@ $cuser = NULL;
 $cepoint = epoint::read();
 if ( !is_null( $cepoint ) ) {
 	$cuser = user::select_by( 'user_id', $cepoint->user_id );
-	$cuser->active_time = dtime::php2sql( $_SERVER['REQUEST_TIME'] );
-	$cuser->active_ip = $_SERVER['REMOTE_ADDR'];
+	$cuser->act_tm = dtime::php2sql( $_SERVER['REQUEST_TIME'] );
+	$cuser->act_ip = $_SERVER['REMOTE_ADDR'];
 	$cuser->update();
 }
 
-function privilege( int $role_id ) {
+function privilege( int $role ) {
 	global $cuser;
-	if ( is_null( $cuser ) || $cuser->role_id < $role_id )
-		failure( 'privilege_required', user::ROLES[ $role_id ] );
+	if ( is_null( $cuser ) || $cuser->role < $role )
+		failure( 'privilege_required', user::ROLES[ $role ] );
 }
 
 

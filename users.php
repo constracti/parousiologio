@@ -46,11 +46,11 @@ $table->add( 'επικοινωνία', function( user $user ) {
 		echo sprintf( '<address>%s</address>', implode( ', ', $address ) ) . "\n";
 } );
 $table->add( 'δικαιώματα', function( user $user ) {
-	echo user::ROLES[ $user->role_id ] . "\n";
+	echo user::ROLES[ $user->role ] . "\n";
 } );
 $table->add( 'εγγραφή', function( user $user ) {
-	if ( !is_null( $user->reg_time ) ) {
-		$dt = new dtime( $user->reg_time );
+	if ( !is_null( $user->reg_tm ) ) {
+		$dt = new dtime( $user->reg_tm );
 		echo sprintf( '<time datetime="%s" style="white-space: nowrap;">%s</time>', $dt->format( dtime::DATETIME ), $dt->format( dtime::DATE ) ) . "\n";
 	}
 	if ( !is_null( $user->reg_ip ) )
@@ -58,10 +58,10 @@ $table->add( 'εγγραφή', function( user $user ) {
 } );
 $table->add( 'τελευταία είσοδος', function( user $user ) {
 	echo '<span style="white-space: nowrap;">';
-	if ( is_null( $user->active_time ) ) {
+	if ( is_null( $user->act_tm ) ) {
 		echo 'ποτέ';
 	} else {
-		$dt = new dtime( $user->active_time );
+		$dt = new dtime( $user->act_tm );
 		$diff = $dt->human_diff();
 		if ( $diff !== '' )
 			echo sprintf( '%s πριν', $dt->human_diff() );

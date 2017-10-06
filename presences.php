@@ -125,9 +125,9 @@ page_body_add( function() {
 		echo '<div>' . "\n";
 		echo sprintf( '<time datetime="%s">%s, %s</time>', $dt->format( dtime::DATE ), $dt->weekday_short_name(), $dt->format( 'j/n' ) );
 		$event->title = sprintf( '%s, %s', $dt->weekday_short_name(), $dt->format( 'j/n' ) );
-		if ( !is_null( $event->name ) ) {
-			echo sprintf( ': <span>%s</span>', $event->name ) . "\n";
-			$event->title .= sprintf( ': %s', $event->name );
+		if ( !is_null( $event->event_name ) ) {
+			echo sprintf( ': <span>%s</span>', $event->event_name ) . "\n";
+			$event->title .= sprintf( ': %s', $event->event_name );
 		}
 		echo '</div>' . "\n";
 		echo sprintf( '<span class="presences-event-sum" data-event="%d"></span>', $event->event_id ) . "\n";

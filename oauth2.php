@@ -48,8 +48,8 @@ if ( array_key_exists( 'code', $_GET ) ) {
 	if ( is_null( $user ) ) {
 		$user = new user();
 		$user->email_address = $email_address;
-		$user->role_id = user::ROLE_GUEST;
-		$user->reg_time = dtime::php2sql( $_SERVER['REQUEST_TIME'] );
+		$user->role = user::ROLE_GUEST;
+		$user->reg_tm = dtime::php2sql( $_SERVER['REQUEST_TIME'] );
 		$user->reg_ip = $_SERVER['REMOTE_ADDR'];
 		$user->insert();
 		$user->inform();

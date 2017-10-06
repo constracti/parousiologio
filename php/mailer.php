@@ -2,7 +2,6 @@
 
 require_once COMPOSER_DIR . 'phpmailer/vendor/autoload.php';
 
-# TODO use local email
 # TODO mailer in separate thread
 
 class mailer extends PHPMailer\PHPMailer\PHPMailer {
@@ -21,5 +20,18 @@ class mailer extends PHPMailer\PHPMailer\PHPMailer {
 		$this->Password = MAIL_PASS;
 		$this->CharSet = 'UTF-8';
 		$this->setFrom( MAIL_USER, SITE_NAME );
+	}
+
+	public function save() {
+		$mailbox = sprintf( '{%s:993/imap/ssl}INBOX.Sent', MAIL_HOST );
+		$imap_stream = imap_open( $mailbox, MAIL_USER, MAIL_PASS );
+		imap_append( $imap_stream, $mailbox, $this->getSentMIMEMessage() );
+		imap_close( $imap_stream );
+	}
+
+	public function send() {
+		$success = parent::send();
+		$this->save();
+		return $success;
 	}
 }

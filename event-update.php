@@ -7,15 +7,15 @@ privilege( user::ROLE_ADMIN );
 $event = event::request();
 
 $fields = [
-	'name' => new field( 'name', [
+	'event_name' => new field( 'event_name', [
 		'placeholder' => 'περιγραφή',
-		'value' => $event->name,
+		'value' => $event->event_name,
 	] ),
-	'date' => new field( 'date', [
+	'event_date' => new field( 'event_date', [
 		'type' => 'date',
 		'placeholder' => 'ημερομηνία',
 		'required' => TRUE,
-		'value' => $event->date,
+		'value' => $event->event_date,
 	] ),
 	'season_id' => new field_select( 'season_id', season::select_options(), [
 		'placeholder' => 'έτος',
@@ -27,8 +27,8 @@ $fields = [
 if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
 	switch ( request_var( 'relation', TRUE ) ) {
 		case NULL:
-			$event->name = $fields['name']->post();
-			$event->date = $fields['date']->post();
+			$event->event_name = $fields['event_name']->post();
+			$event->event_date = $fields['event_date']->post();
 			$event->season_id = $fields['season_id']->post();
 			$event->update();
 			success( [
