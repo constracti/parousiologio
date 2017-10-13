@@ -32,6 +32,12 @@ $location = location::select_by( 'location_id', $team->location_id );
 
 page_title_set( sprintf( '%s (%s %d)', $team->team_name, $location->location_name, $cseason->year ) );
 
+page_style_add( site_href( 'css/presences-container.css', [ 'v' => '0.1' ] ) );
+page_script_add( site_href( 'js/presences-container.js', [ 'v' => '0.1' ] ) );
+page_script_add( site_href( 'js/presences-property.js', [ 'v' => '0.1' ] ) );
+page_script_add( site_href( 'js/presences-month.js', [ 'v' => '0.1' ] ) );
+page_script_add( site_href( 'js/presences-modal.js', [ 'v' => '0.1' ] ) );
+
 page_nav_add( 'season_dropdown' );
 
 page_nav_add( 'bar_link', [
@@ -42,6 +48,12 @@ page_nav_add( 'bar_link', [
 
 $children = $team->select_children();
 $events = $team->select_events();
+foreach ( $events as $event ) {
+	$dt = new dtime( $event->event_date_fixed );
+	$event->title = sprintf( '%s, %s', $dt->weekday_short_name(), $dt->format( 'j/n' ) );
+	if ( !is_null( $event->event_name ) )
+		$event->title .= sprintf( ': %s', $event->event_name );
+}
 $presences = $team->check_presences();
 
 page_body_add( function() {
@@ -49,74 +61,6 @@ page_body_add( function() {
 	global $events;
 	global $children;
 	global $presences;
-?>
-<style>
-#presences-sidebar {
-	display: none;
-	flex-shrink: 10;
-	min-width: 120px;
-}
-#presences-sidebar>.presences-event.flex {
-	padding: 2px;
-}
-#presences-sidebar>.presences-event.flex>* {
-	margin: 2px;
-}
-#presences-sidebar>.presences-event>:not(:last-child) {
-	overflow: hidden;
-	text-overflow: ellipsis;
-}
-#presences-sidebar>.presences-event>:last-child {
-	flex-shrink: 0;
-}
-#presences-container.presences-container-expanded>#presences-sidebar>.presences-event>:last-child {
-	display: none;
-}
-#presences-table .presences-property {
-	display: none;
-}
-#presences-table>*>tr>* {
-	padding: 4px;
-	text-align: left;
-}
-
-@media (min-width:993px) {
-	#presences-table .presences-month.presences-month-hide {
-		display: none;
-	}
-	#presences-table .presences-property.presences-property-show {
-		display: table-cell;
-	}
-}
-
-@media (max-width:992px) {
-	#presences-container {
-		padding: 0px;
-	}
-	#presences-container>* {
-		display: block;
-		height: 100%;
-		margin: 0px;
-		flex-grow: 1;
-		overflow-y: auto;
-	}
-	#presences-container:not(.presences-container-expanded)>#presences-main {
-		display: none;
-	}
-	#presences-table {
-		width: 100%;
-		border-left: none !important;
-		border-right: none !important;
-	}
-	#presences-table>thead, #presences-table>tfoot,
-	#presences-table .presences-property,
-	#presences-table .presences-event:not(.presences-event-visible),
-	.action>.modal-show {
-		display: none;
-	}
-}
-</style>
-<?php
 	echo '<div id="presences-container" class="flex" style="justify-content: center; align-items: flex-start;">' . "\n";
 	echo '<div id="presences-sidebar" class="w3-border-top">' . "\n";
 	foreach ( array_reverse( $events, TRUE ) as $event ) {
@@ -124,11 +68,8 @@ page_body_add( function() {
 		echo sprintf( '<a class="flex presences-event w3-button w3-border-bottom" data-event="%d">', $event->event_id ) . "\n";
 		echo '<div>' . "\n";
 		echo sprintf( '<time datetime="%s">%s, %s</time>', $dt->format( dtime::DATE ), $dt->weekday_short_name(), $dt->format( 'j/n' ) );
-		$event->title = sprintf( '%s, %s', $dt->weekday_short_name(), $dt->format( 'j/n' ) );
-		if ( !is_null( $event->event_name ) ) {
+		if ( !is_null( $event->event_name ) )
 			echo sprintf( ': <span>%s</span>', $event->event_name ) . "\n";
-			$event->title .= sprintf( ': %s', $event->event_name );
-		}
 		echo '</div>' . "\n";
 		echo sprintf( '<span class="presences-event-sum" data-event="%d"></span>', $event->event_id ) . "\n";
 		echo '</a>' . "\n";
@@ -194,7 +135,7 @@ page_body_add( function() {
 	echo '</tbody>' . "\n";
 	echo '<tfoot class="w3-theme">' . "\n";
 	echo '<tr>' . "\n";
-	echo '<td></td>' . "\n";
+	echo sprintf( '<td>%d</td>', count( $children ) ) . "\n";
 	foreach ( child::COLS as $col => $colname )
 		echo sprintf( '<td class="presences-property" data-property="%s"></td>', $col ) . "\n";
 	foreach ( $events as $event ) {
@@ -247,90 +188,6 @@ $( '.presences-check' ).change( function() {
 	} );
 } );
 
-$( '#presences-sidebar>.presences-event' ).click( function() {
-	var event = $( this ).data( 'event' );
-	var selected = !$( this ).hasClass( 'w3-theme' );
-	$( '#presences-sidebar>.presences-event' ).removeClass( 'w3-theme' );
-	$( '#presences-table .presences-event' ).removeClass( 'presences-event-visible' );
-	if ( selected ) {
-		$( '#presences-container' ).addClass( 'presences-container-expanded' );
-		$( this ).addClass( 'w3-theme' );
-		$( '#presences-table .presences-event[data-event="' + event + '"]' ).addClass( 'presences-event-visible' );
-	} else {
-		$( '#presences-container' ).removeClass( 'presences-container-expanded' );
-	}
-	if ( Storage !== undefined ) {
-		if ( selected )
-			localStorage.setItem( 'event', event );
-		else
-			localStorage.removeItem( 'event' );
-	}
-} );
-if ( Storage !== undefined && localStorage.getItem( 'event' ) !== null )
-	$( '#presences-sidebar>.presences-event[data-event="' + localStorage.getItem( 'event' ) + '"]' ).click();
-
-$( window ).resize( function() {
-	$( '#presences-container' ).height( $( window ).height() - $( '#presences-container' ).position().top );
-} ).resize();
-
-var properties = [
-	'grade_name',
-];
-if ( Storage !== undefined && localStorage.getItem( 'properties' ) !== null ) {
-	if ( localStorage.getItem( 'properties' ) !== '' )
-		properties = localStorage.getItem( 'properties' ).split( ';' );
-	else
-		properties = [];
-}
-$( '.property-toggle' ).each( function() {
-	var property = $( this ).data( 'property' );
-	var index = properties.indexOf( property );
-	if ( index !== -1 ) {
-		$( this ).addClass( 'w3-theme' );
-		$( '.presences-property[data-property="' + property + '"]' ).addClass( 'presences-property-show' );
-	}
-} ).click( function() {
-	var property = $( this ).data( 'property' );
-	var index = properties.indexOf( property );
-	if ( index !== -1 ) {
-		$( this ).removeClass( 'w3-theme' );
-		$( '.presences-property[data-property="' + property + '"]' ).removeClass( 'presences-property-show' );
-		properties.splice( index, 1 );
-	} else {
-		$( this ).addClass( 'w3-theme' );
-		$( '.presences-property[data-property="' + property + '"]' ).addClass( 'presences-property-show' );
-		properties.push( property );
-	}
-	if ( Storage !== undefined )
-		localStorage.setItem( 'properties', properties.join( ';' ) );
-} );
-
-var months = [];
-if ( Storage !== undefined && localStorage.getItem( 'months' ) !== null && localStorage.getItem( 'months' ) !== '' )
-	months = localStorage.getItem( 'months' ).split( ';' );
-$( '.month-toggle' ).each( function() {
-	var month = $( this ).data( 'month' );
-	var index = months.indexOf( month );
-	if ( index !== -1 )
-		$( '.presences-month[data-month="' + month + '"]' ).addClass( 'presences-month-hide' );
-	else
-		$( this ).addClass( 'w3-theme' );
-} ).click( function() {
-	var month = $( this ).data( 'month' );
-	var index = months.indexOf( month );
-	if ( index !== -1 ) {
-		$( this ).addClass( 'w3-theme' );
-		$( '.presences-month[data-month="' + month + '"]' ).removeClass( 'presences-month-hide' );
-		months.splice( index, 1 );
-	} else {
-		$( this ).removeClass( 'w3-theme' );
-		$( '.presences-month[data-month="' + month + '"]' ).addClass( 'presences-month-hide' );
-		months.push( month );
-	}
-	if ( Storage !== undefined )
-		localStorage.setItem( 'months', months.join( ';' ) );
-} );
-
 } );
 </script>
 <?php
@@ -381,24 +238,6 @@ page_body_add( function() {
 		</div>
 	</div>
 </section>
-<script>
-$( function() {
-
-$( '.modal-show' ).click( function() {
-	$( $( this ).data( 'modal' ) ).show();
-} );
-
-$( '.modal' ).click( function() {
-	$( this ).hide();
-} ).find( '.w3-modal-content' ).click( function( event ) {
-	event.stopPropagation();
-} ).end().
-find( '.w3-hover-red' ).click( function() {
-	$( this ).parents( '.modal' ).hide();
-} );
-
-} );
-</script>
 <?php
 } );
 

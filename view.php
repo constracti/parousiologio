@@ -6,7 +6,8 @@ privilege( user::ROLE_OBSER );
 
 if ( !defined( 'INDEX' ) ) {
 
-page_title_set( 'Προβολή' );
+page_title_set( sprintf( 'Προβολή %d', $cseason->year ) );
+
 page_nav_add( 'season_dropdown', [
 	'href' => 'view.php',
 	'text' => 'προβολή',
@@ -98,7 +99,7 @@ page_body_add( [ $panel, 'html' ], $items );
 page_body_add( function() {
 ?>
 <section class="action">
-	<a href="<?= site_href( 'view-download.php' ) ?>" class="w3-button w3-circle w3-theme-action" title="μεταφόρτωση">
+	<a href="<?= season_href( 'view-download.php' ) ?>" class="w3-button w3-circle w3-theme-action" title="μεταφόρτωση">
 		<span class="fa fa-download"></span>
 	</a>
 </section>

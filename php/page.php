@@ -153,6 +153,13 @@ page_nav_add( function() {
 			'hide_medium' => FALSE,
 		] );
 	}
+	bar_link( [
+		'href' => season_href( 'summary.php' ),
+		'text' => 'σύνοψη',
+		'icon' => 'fa-table',
+		'hide_small' => FALSE,
+		'hide_medium' => FALSE,
+	] );
 	if ( $cuser->role >= user::ROLE_ADMIN ) {
 		bar_link( [
 			'href' => season_href( 'events.php' ),
@@ -309,7 +316,7 @@ function form_section( array $fields, array $arguments = [] ) {
 	echo sprintf( '<span>%s</span>', $arguments['submit_text'] ) . "\n";
 	echo '</button>' . "\n";
 	if ( array_key_exists( 'delete', $arguments ) ) {
-		echo sprintf( '<a class="w3-button w3-round w3-theme w3-right link-ajax" href="%s" data-confirm="οριστική διαγραφή;">', $arguments['delete'] ) . "\n";
+		echo sprintf( '<a class="w3-button w3-round w3-red w3-right link-ajax" href="%s" data-confirm="οριστική διαγραφή;">', $arguments['delete'] ) . "\n";
 		echo '<span class="fa fa-trash"></span>' . "\n";
 		echo '<span>διαγραφή</span>' . "\n";
 		echo '</a>' . "\n";
@@ -364,19 +371,19 @@ page_body_add( function() {
 ?>
 <style>
 .link {
+	display: inline-block;
 	white-space: nowrap;
 	text-decoration: none;
-	color: Blue;
+	color: #000000;
 }
 .link:hover {
-	color: DarkBlue;
+	color: #3a3a3a;
 }
-
 .link-delete {
-	color: Red;
+	color: #f44336;
 }
 .link-delete:hover {
-	color: DarkRed;
+	color: #ff5722;
 }
 </style>
 <script>

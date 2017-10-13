@@ -1,0 +1,64 @@
+#presences-sidebar {
+	display: none;
+	flex-shrink: 10;
+	min-width: 120px;
+}
+#presences-sidebar>.presences-event.flex {
+	padding: 2px;
+}
+#presences-sidebar>.presences-event.flex>* {
+	margin: 2px;
+}
+#presences-sidebar>.presences-event>:not(:last-child) {
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+#presences-sidebar>.presences-event>:last-child {
+	flex-shrink: 0;
+}
+#presences-container.presences-container-expanded>#presences-sidebar>.presences-event>:last-child {
+	display: none;
+}
+#presences-table .presences-property {
+	display: none;
+}
+#presences-table>*>tr>* {
+	padding: 4px;
+	text-align: left;
+}
+
+@media (min-width:993px) {
+	#presences-table .presences-month.presences-month-hide {
+		display: none;
+	}
+	#presences-table .presences-property.presences-property-show {
+		display: table-cell;
+	}
+}
+
+@media (max-width:992px) {
+	#presences-container {
+		padding: 0px;
+	}
+	#presences-container>* {
+		display: block;
+		height: 100%;
+		margin: 0px;
+		flex-grow: 1;
+		overflow-y: auto;
+	}
+	#presences-container:not(.presences-container-expanded)>#presences-main {
+		display: none;
+	}
+	#presences-table {
+		width: 100%;
+		border-left: none !important;
+		border-right: none !important;
+	}
+	#presences-table>thead, #presences-table>tfoot,
+	#presences-table .presences-property,
+	#presences-table .presences-event:not(.presences-event-visible),
+	.action>.modal-show {
+		display: none;
+	}
+}

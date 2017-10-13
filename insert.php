@@ -83,7 +83,6 @@ $fields = [
 		'moth' => 'μητρός',
 	], [
 		'placeholder' => 'κινητό ενημέρωσης',
-		'value' => $child->get_meta( 'mobile' ),
 	] ),
 ];
 

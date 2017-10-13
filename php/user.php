@@ -119,7 +119,7 @@ class user extends entity {
 		$mail->addReplyTo( $user->email_address );
 		$mail->Subject = sprintf( '%s - %s', SITE_NAME, 'εγγραφή' );
 		$mail->msgHTML( implode( mailer::NEWLINE, [
-			sprintf( '<p>Ο χρήστης με διεύθυνση email <i>%s</i> ολοκλήρωσε την εγγραφή του στο Παρουσιολόγιο.</p>', $this->email_address ),
+			sprintf( '<p>Ο χρήστης με διεύθυνση <i>%s</i> ολοκλήρωσε την εγγραφή του.</p>', $this->email_address ),
 		] ) );
 		$mail->send();
 	}

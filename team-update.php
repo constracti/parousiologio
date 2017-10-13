@@ -33,7 +33,7 @@ $fields = [
 
 if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
 	switch ( request_var( 'relation', TRUE ) ) {
-		NULL:
+		case NULL:
 			$team->location_id = $fields['location_id']->post();
 			$team->team_name = $fields['team_name']->post();
 			$team->season_id = $fields['season_id']->post();
