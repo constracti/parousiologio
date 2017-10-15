@@ -53,7 +53,7 @@ if ( array_key_exists( 'code', $_GET ) ) {
 		$user->reg_ip = $_SERVER['REMOTE_ADDR'];
 		$user->insert();
 		$user->inform();
-		user::clear_by_email_address();
+		user::clear_by_email_address( $user->email_address );
 	}
 	epoint::write( $user->user_id );
 	redirect();

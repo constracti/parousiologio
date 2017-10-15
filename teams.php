@@ -68,6 +68,8 @@ $panel->add( 'team_id', function( $item ) {
 	$team->users = [];
 } );
 $panel->add( 'user_id', function( $item ) {
+	if ( is_null( $item->user_id ) )
+		return;
 	global $teams;
 	$team = $teams[ $item->team_id ];
 	$team->users[] = $item;

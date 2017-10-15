@@ -24,6 +24,7 @@ $fields = [
 ];
 
 if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
+	request_recaptcha();
 	$last_name = $fields['last_name']->post();
 	$first_name = $fields['first_name']->post();
 	$email_address = $fields['email_address']->post();
@@ -64,6 +65,7 @@ page_body_add( 'form_section', $fields, [
 	'responsive' => 'w3-col m6 s12',
 	'submit_icon' => 'fa-power-off',
 	'submit_text' => 'εγγραφή',
+	'recaptcha' => TRUE,
 ] );
 
 page_html();

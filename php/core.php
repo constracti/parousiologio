@@ -29,6 +29,7 @@ require_once SITE_DIR . 'php/vlink.php';
  **********/
 
 $errors = [
+	'internal_error' => 'Εσωτερικό σφάλμα:<br /><code>%s</code>',
 	'database_not_accessible' => 'Η βάση δεδομένων δεν είναι προσβάσιμη:<br /><code>%s</code>',
 	'privilege_required' => 'Πρέπει να είσαι τουλάχιστον <i>%s</i> για να έχεις πρόσβαση σε αυτή τη σελίδα.',
 	'argument_not_defined' => 'Η παράμετρος <i>%s</i> δεν είναι ορισμένη.',
@@ -104,6 +105,23 @@ function request_int( string $key, bool $nullable = FALSE ) {
 	if ( !is_null( $var ) )
 		return $var;
 	failure( 'argument_not_valid', $key );
+}
+
+function request_recaptcha() {
+	$response = request_var( 'g-recaptcha-response' );
+	$ch = curl_init( 'https://www.google.com/recaptcha/api/siteverify' );
+	curl_setopt( $ch, CURLOPT_POST, TRUE );
+	curl_setopt( $ch, CURLOPT_POSTFIELDS, [
+		'secret' => RECAPTCHA_SECRET_KEY,
+		'response' => $response,
+		'remoteip' => $_SERVER['REMOTE_ADDR'],
+	] );
+	curl_setopt( $ch, CURLOPT_RETURNTRANSFER, TRUE );
+	$result = curl_exec( $ch );
+	curl_close( $ch );
+	$result = json_decode( $result );
+	if ( $result->success === FALSE )
+		failure( 'argument_not_valid', 'g-recaptcha-response' );
 }
 
 

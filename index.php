@@ -15,6 +15,7 @@ $fields = [
 	] ),
 ];
 if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
+	request_recaptcha();
 	$email_address = $fields['email_address']->post();
 	$password = $fields['password']->post();
 	$user = user::select_by_email_address( $email_address );
@@ -66,6 +67,7 @@ page_body_add( 'form_section', $fields, [
 		'</div>' . "\n",
 	'submit_icon' => 'fa-sign-in',
 	'submit_text' => 'είσοδος',
+	'recaptcha' => TRUE,
 ] );
 
 } elseif ( $cuser->role === user::ROLE_GUEST ) {

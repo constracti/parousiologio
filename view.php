@@ -99,7 +99,7 @@ page_body_add( [ $panel, 'html' ], $items );
 page_body_add( function() {
 ?>
 <section class="action">
-	<a href="<?= season_href( 'view-download.php' ) ?>" class="w3-button w3-circle w3-theme-action" title="μεταφόρτωση">
+	<a href="<?= season_href( 'season-download.php' ) ?>" class="w3-button w3-circle w3-theme-action" title="μεταφόρτωση">
 		<span class="fa fa-download"></span>
 	</a>
 </section>

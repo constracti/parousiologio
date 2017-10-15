@@ -16,6 +16,7 @@ $fields = [
 ];
 
 if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
+	request_recaptcha();
 	$email_address = $fields['email_address']->post();
 	$password = $fields['password']->post();
 	$user = user::select_by_email_address( $email_address );
@@ -45,6 +46,7 @@ page_title_set( 'Επαναφορά κωδικού πρόσβασης' );
 page_body_add( 'form_section', $fields, [
 	'submit_icon' => 'fa-lock',
 	'submit_text' => 'επαναφορά',
+	'recaptcha' => TRUE,
 ] );
 
 page_html();

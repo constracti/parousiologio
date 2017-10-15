@@ -41,7 +41,7 @@ page_script_add( site_href( 'js/presences-modal.js', [ 'v' => '0.1' ] ) );
 page_nav_add( 'season_dropdown' );
 
 page_nav_add( 'bar_link', [
-	'href' => site_href( 'presences.php', [ 'team_id', $team->team_id ] ),
+	'href' => site_href( 'presences.php', [ 'team_id' => $team->team_id ] ),
 	'text' => 'παρουσίες',
 	'icon' => 'fa-check-square',
 ] );
@@ -104,7 +104,12 @@ page_body_add( function() {
 	echo '<tr>' . "\n";
 	foreach ( $events as $event ) {
 		$dt = new dtime( $event->event_date_fixed );
-		echo sprintf( '<th class="presences-event presences-month w3-center" data-event="%d" data-month="%s" title="%s">%s</th>', $event->event_id, $dt->format( 'Y-m' ), $event->title, $dt->format( 'j' ) ) . "\n";
+		echo sprintf( '<th class="presences-event presences-month w3-right-align" data-event="%d" data-month="%s" title="%s">%s</th>',
+			$event->event_id,
+			$dt->format( 'Y-m' ),
+			$event->title,
+			$dt->format( 'j' )
+		) . "\n";
 	}
 	echo '</tr>' . "\n";
 	echo '</thead>' . "\n";
@@ -127,7 +132,7 @@ page_body_add( function() {
 		global $events;
 		$event = $events[ $item->event_id ];
 		$dt = new dtime( $event->event_date_fixed );
-		echo sprintf( '<td class="presences-event presences-month w3-center" data-event="%d" data-month="%s" title="%s">', $item->event_id, $dt->format( 'Y-m' ), $event->title ) . "\n";
+		echo sprintf( '<td class="presences-event presences-month w3-right-align" data-event="%d" data-month="%s" title="%s">', $item->event_id, $dt->format( 'Y-m' ), $event->title ) . "\n";
 		echo sprintf( '<input class="presences-check w3-check" style="margin-top: -8px;" data-child="%d" data-event="%d" type="checkbox"%s />', $item->child_id, $item->event_id, $item->check ? ' checked="checked"' : '' ) . "\n";
 		echo '</td>' . "\n";
 	} );
@@ -140,7 +145,7 @@ page_body_add( function() {
 		echo sprintf( '<td class="presences-property" data-property="%s"></td>', $col ) . "\n";
 	foreach ( $events as $event ) {
 		$dt = new dtime( $event->event_date_fixed );
-		echo sprintf( '<td class="presences-event presences-month presences-event-sum w3-center" data-event="%d" data-month="%s" title="%s"></td>', $event->event_id, $dt->format( 'Y-m' ), $event->title ) . "\n";
+		echo sprintf( '<td class="presences-event presences-month presences-event-sum w3-right-align" data-event="%d" data-month="%s" title="%s"></td>', $event->event_id, $dt->format( 'Y-m' ), $event->title ) . "\n";
 	}
 	echo '<td class="presences-total-sum w3-right-align"></td>' . "\n";
 	echo '</tr>' . "\n";

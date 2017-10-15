@@ -25,6 +25,23 @@ $table->add( 'ονοματεπώνυμο', function( user $user ) {
 		echo sprintf( '<span>%s</span>', $user->last_name ) . "\n";
 	if ( !is_null( $user->first_name ) )
 		echo sprintf( '<span>%s</span>', $user->first_name ) . "\n";
+	echo '<div class="w3-small">' . "\n";
+	$href = site_href( 'user-update.php', [ 'user_id' => $user->user_id ] );
+	echo sprintf( '<a href="%s" class="link">', $href ) . "\n";
+	echo '<span class="fa fa-pencil"></span>' . "\n";
+	echo '<span>επεξεργασία</span>' . "\n";
+	echo '</a>' . "\n";
+	$href = site_href( 'user-teams.php', [ 'user_id' => $user->user_id ] );
+	echo sprintf( '<a href="%s" class="link">', $href ) . "\n";
+	echo '<span class="fa fa-users"></span>' . "\n";
+	echo '<span>ομάδες</span>' . "\n";
+	echo '</a>' . "\n";
+	$href = site_href( 'user-delete.php', [ 'user_id' => $user->user_id ] );
+	echo sprintf( '<a href="%s" class="link link-delete link-ajax" data-confirm="οριστική διαγραφή;" data-remove="tr">', $href ) . "\n";
+	echo '<span class="fa fa-trash"></span>' . "\n";
+	echo '<span>διαγραφή</span>' . "\n";
+	echo '</a>' . "\n";
+	echo '</div>' . "\n";
 } );
 $table->add( 'επικοινωνία', function( user $user ) {
 	echo sprintf( '<span class="fa %s"></span>', is_null( $user->password_hash ) ? 'fa-unlock-alt' : 'fa-lock' ) . "\n";
@@ -56,7 +73,7 @@ $table->add( 'εγγραφή', function( user $user ) {
 	if ( !is_null( $user->reg_ip ) )
 		echo sprintf( '<span style="white-space: nowrap;">από %s</span>', $user->reg_ip ) . "\n";
 } );
-$table->add( 'τελευταία είσοδος', function( user $user ) {
+$table->add( 'ενέργεια', function( user $user ) {
 	echo '<span style="white-space: nowrap;">';
 	if ( is_null( $user->act_tm ) ) {
 		echo 'ποτέ';
@@ -69,23 +86,6 @@ $table->add( 'τελευταία είσοδος', function( user $user ) {
 			echo 'τώρα';
 	}
 	echo '</span>' . "\n";
-} );
-$table->add( 'ενέργειες', function( user $user ) {
-	$href = site_href( 'user-update.php', [ 'user_id' => $user->user_id ] );
-	echo sprintf( '<a href="%s" class="link">', $href ) . "\n";
-	echo '<span class="fa fa-pencil"></span>' . "\n";
-	echo '<span>επεξεργασία</span>' . "\n";
-	echo '</a>' . "\n";
-	$href = site_href( 'user-teams.php', [ 'user_id' => $user->user_id ] );
-	echo sprintf( '<a href="%s" class="link">', $href ) . "\n";
-	echo '<span class="fa fa-users"></span>' . "\n";
-	echo '<span>ομάδες</span>' . "\n";
-	echo '</a>' . "\n";
-	$href = site_href( 'user-delete.php', [ 'user_id' => $user->user_id ] );
-	echo sprintf( '<a href="%s" class="link link-delete link-ajax" data-confirm="οριστική διαγραφή;" data-remove="tr">', $href ) . "\n";
-	echo '<span class="fa fa-trash"></span>' . "\n";
-	echo '<span>διαγραφή</span>' . "\n";
-	echo '</a>' . "\n";
 } );
 page_body_add( [ $table, 'html' ], user::select( [], [
 	'last_name' => 'ASC',

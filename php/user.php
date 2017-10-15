@@ -116,7 +116,7 @@ class user extends entity {
 		require_once SITE_DIR . 'php/mailer.php';
 		$mail = new mailer();
 		$mail->addAddress( MAIL_USER );
-		$mail->addReplyTo( $user->email_address );
+		$mail->addReplyTo( $this->email_address );
 		$mail->Subject = sprintf( '%s - %s', SITE_NAME, 'εγγραφή' );
 		$mail->msgHTML( implode( mailer::NEWLINE, [
 			sprintf( '<p>Ο χρήστης με διεύθυνση <i>%s</i> ολοκλήρωσε την εγγραφή του.</p>', $this->email_address ),

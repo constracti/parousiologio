@@ -183,6 +183,13 @@ page_nav_add( function() {
 			'hide_medium' => FALSE,
 		] );
 		bar_link( [
+			'href' => site_href( 'children.php' ),
+			'text' => 'παιδιά',
+			'icon' => 'fa-child',
+			'hide_small' => FALSE,
+			'hide_medium' => FALSE,
+		] );
+		bar_link( [
 			'href' => site_href( 'users.php' ),
 			'text' => 'χρήστες',
 			'icon' => 'fa-user',
@@ -292,11 +299,15 @@ function form_section( array $fields, array $arguments = [] ) {
 		$arguments['submit_icon'] = 'fa-floppy-o';
 	if ( !array_key_exists( 'submit_text', $arguments ) )
 		$arguments['submit_text'] = 'αποθήκευση';
+	if ( !array_key_exists( 'recaptcha', $arguments ) )
+		$arguments['recaptcha'] = FALSE;
 	if ( $arguments['full_screen'] )
 		echo '<section class="w3-panel">' . "\n";
 	else
 		echo '<section class="w3-panel w3-content">' . "\n";
 	echo '<form class="form-ajax w3-card-4 w3-round w3-theme-l4" autocomplete="off" method="post">' . "\n";
+	if ( $arguments['recaptcha'] )
+		echo sprintf( '<div class="g-recaptcha" data-sitekey="%s" data-callback="form_ajax_recaptcha_callback" data-size="invisible"></div>', RECAPTCHA_SITE_KEY ) . "\n";
 	if ( array_key_exists( 'header', $arguments ) ) {
 		echo '<div class="w3-container">' . "\n";
 		echo $arguments['header'];
@@ -332,10 +343,24 @@ function form_section( array $fields, array $arguments = [] ) {
 	echo '</section>' . "\n";
 ?>
 <script>
+
+var form;
+
+function form_ajax_recaptcha_callback( token ) {
+	form.find( '.g-recaptcha-response' ).val( token );
+	form.submit();
+}
+
 $( function() {
 
 $( '.form-ajax' ).submit( function() {
-	var form = $( this );
+	form = $( this );
+	var recaptcha = form.find( '.g-recaptcha' );
+	if ( recaptcha.length > 0 && recaptcha.find( '.g-recaptcha-response' ).val() === '' ) {
+		recaptcha.data( 'callback', 'alert' );
+		grecaptcha.execute();
+		return false;
+	}
 	var btn = form.find( 'button[type="submit"]' );
 	if ( btn.prop( 'disabled' ) )
 		return false;
@@ -358,12 +383,18 @@ $( '.form-ajax' ).submit( function() {
 		fa.prop( 'class', cl );
 		btn.prop( 'disabled', false );
 	} );
+	if ( recaptcha.length > 0 ) {
+		grecaptcha.reset();
+		recaptcha.find( '.g-recaptcha-response' ).val( '' );
+	}
 	return false;
 } );
 
 } );
 </script>
 <?php
+	if ( $arguments['recaptcha'] )
+		echo '<script src="https://www.google.com/recaptcha/api.js" async defer></script>' . "\n";
 }
 
 page_body_add( function() {

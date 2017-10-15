@@ -109,7 +109,7 @@ $panel->add( NULL, function( $item ) {
 	echo '<tr>' . "\n";
 	foreach ( $events as $event ) {
 		$dt = new dtime( $event->event_date );
-		echo sprintf( '<th class="presences-event presences-month w3-center" data-event="%d" data-month="%s" title="%s">%s</th>',
+		echo sprintf( '<th class="presences-event presences-month w3-right-align" data-event="%d" data-month="%s" title="%s">%s</th>',
 			$event->event_id,
 			$dt->format( 'Y-m' ),
 			$event->title,
@@ -210,8 +210,9 @@ $panel->add( 'location_id', function( $item ) {
 $panel->add( 'team_id', function( $item ) {
 	global $teams;
 	$team = $teams[ $item->team_id ];
+	$href = site_href( 'presences.php', [ 'team_id' => $team->team_id ] );
 	echo '<tr>' . "\n";
-	echo sprintf( '<td>%s</td>', $team->team_name ) . "\n";
+	echo sprintf( '<td><a href="%s">%s</a></td>', $href, $team->team_name ) . "\n";
 }, function( $item ) {
 	echo sprintf( '<td class="presences-team-sum w3-right-align" data-team="%d"></td>', $item->team_id ) . "\n";
 	echo '</tr>' . "\n";
@@ -238,7 +239,7 @@ page_body_add( function() {
 	<button class="w3-button w3-circle w3-theme modal-show" data-modal="#modal-view" title="προβολή">
 		<span class="fa fa-eye"></span>
 	</button>
-	<a href="<?= season_href( 'view-download.php' ) ?>" class="w3-button w3-circle w3-theme-action" title="μεταφόρτωση">
+	<a href="<?= season_href( 'season-download.php' ) ?>" class="w3-button w3-circle w3-theme-action" title="μεταφόρτωση">
 		<span class="fa fa-download"></span>
 	</a>
 </section>
