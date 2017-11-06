@@ -11,7 +11,7 @@ if ( $user->role >= $cuser->role )
 
 $user->delete();
 
-$href = season_href( 'users.php' );
+$href = site_href( 'users.php' );
 if ( $_SERVER['HTTP_REFERER'] === $href )
 	success();
 

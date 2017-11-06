@@ -10,9 +10,9 @@ class follow extends entity {
 		'location_id' => 'i',
 	];
 
-	public $follow_id;
-	public $child_id;
-	public $season_id;
-	public $grade_id;
-	public $location_id;
+	public $follow_id;   # integer, primary key
+	public $child_id;    # integer
+	public $season_id;   # integer
+	public $grade_id;    # integer
+	public $location_id; # integer, nullable
 }

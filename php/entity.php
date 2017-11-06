@@ -54,6 +54,8 @@ abstract class entity {
 		// LIMIT
 		if ( is_null( $limit ) )
 			$limit = '';
+		elseif ( is_array( $limit ) )
+			$limit = sprintf( ' LIMIT %d, %d', $limit[0], $limit[1] );
 		else
 			$limit = sprintf( ' LIMIT %d', $limit );
 		// QUERY
@@ -173,6 +175,27 @@ abstract class entity {
 		if ( $nullable )
 			return NULL;
 		failure( 'argument_not_valid', $key );
+	}
+
+	public static function count(): int {
+		global $db;
+		$class = get_called_class();
+		$fields = $class::FIELDS;
+		$id = NULL;
+		foreach ( $fields as $prop => $type ) {
+			if ( is_null( $id ) ) {
+				$id = $prop;
+				break;
+			}
+		}
+		$sql = sprintf( 'SELECT COUNT(`%s`) AS `count` FROM `xa_%s`', $id, $class );
+		$stmt = $db->prepare( $sql );
+		$stmt->execute();
+		$rslt = $stmt->get_result();
+		$stmt->close();
+		$item = $rslt->fetch_object();
+		$rslt->free();
+		return $item->count;
 	}
 
 	/* meta */
