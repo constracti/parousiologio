@@ -35,3 +35,11 @@ define( 'DB_HOST', '' );
 define( 'DB_NAME', '' );
 define( 'DB_USER', '' );
 define( 'DB_PASS', '' );
+
+
+/*************
+ * recaptcha *
+ *************/
+
+define( 'RECAPTCHA_SITE_KEY', '' );
+define( 'RECAPTCHA_SECRET_KEY', '' );

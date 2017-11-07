@@ -196,6 +196,13 @@ page_nav_add( function() {
 			'hide_small' => FALSE,
 			'hide_medium' => FALSE,
 		] );
+		bar_link( [
+			'href' => site_href( 'seasons.php' ),
+			'text' => 'έτη',
+			'icon' => 'fa-calendar',
+			'hide_small' => FALSE,
+			'hide_medium' => FALSE,
+		] );
 	}
 ?>
 	</div>
