@@ -528,6 +528,7 @@ function page_html() {
 		<meta name="author" content="constracti" />
 		<meta name="description" content="Παρουσιολόγιο Χαρούμενων Αγωνιστών Αθήνας" />
 		<meta name="keywords" content="παρουσίες, παρουσίες χα, παρουσιολόγιο, χαρούμενοι αγωνιστές, χαρούμενοι, αγωνιστές, παρουσιολόγιο χαρούμενων αγωνιστών, παρουσιολόγιο χα, χα, parousies, parousies xa, parousiologio, xaroumenoi agonistes, xaroumenoi, agonistes, parousiologio xaroumenon agoniston, parousiologio xa, xa" />
+		<meta name="theme-color" content="#2196f3" />
 		<title><?= $page_title ?? SITE_NAME ?></title>
 		<link rel="icon" href="<?= site_href( 'favicon-256.png' ) ?>" />
 <?php
