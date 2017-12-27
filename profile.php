@@ -68,6 +68,16 @@ page_nav_add( 'bar_link', [
 	'hide_medium' => FALSE,
 ] );
 
+if ( !$cuser->has_gravatar() )
+	page_body_add( function() {
+		echo '<section class="w3-panel w3-content">' . "\n";
+		echo '<p>' . "\n";
+		echo '<span class="fa fa-info-circle"></span>' . "\n";
+		echo '<span>Μπες στο <a href="https://el.gravatar.com/" target="_blank" title="Γενικά αναγνωρισμένο Άβαταρ">gravatar.com</a> και όρισε την εικόνα του προφίλ σου!</span>' . "\n";
+		echo '</p>' . "\n";
+		echo '</section>' . "\n";
+	} );
+
 page_body_add( 'form_section', $fields, [
 	'responsive' => 'w3-col m6 s12',
 ] );

@@ -197,4 +197,15 @@ WHERE `user_id` = ? AND `team_id` IN (
 		$stmt->execute();
 		$stmt->close();
 	}
+
+	public function has_gravatar(): bool {
+		$hash = md5( $this->email_address );
+		$gravatar = sprintf( 'https://www.gravatar.com/avatar/%s?size=24&default=404', $hash );
+		$ch = curl_init( $gravatar );
+		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, TRUE );
+		curl_exec( $ch );
+		$http_code = curl_getinfo( $ch, CURLINFO_HTTP_CODE );
+		curl_close( $ch );
+		return $http_code !== 404;
+	}
 }
