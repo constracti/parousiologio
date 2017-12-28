@@ -200,12 +200,22 @@ WHERE `user_id` = ? AND `team_id` IN (
 
 	public function has_gravatar(): bool {
 		$hash = md5( $this->email_address );
-		$gravatar = sprintf( 'https://www.gravatar.com/avatar/%s?size=24&default=404', $hash );
+		$gravatar = sprintf( 'https://www.gravatar.com/avatar/%s?default=404', $hash );
 		$ch = curl_init( $gravatar );
+		if ( $ch === FALSE )
+			return FALSE;
+		curl_setopt( $ch, CURLOPT_NOBODY, TRUE );
 		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, TRUE );
 		curl_exec( $ch );
 		$http_code = curl_getinfo( $ch, CURLINFO_HTTP_CODE );
 		curl_close( $ch );
+		if ( $http_code === FALSE )
+			return FALSE;
 		return $http_code !== 404;
+	}
+
+	public function get_gravatar(): string {
+		$hash = md5( $this->email_address );
+		return sprintf( 'https://www.gravatar.com/avatar/%s?size=24&default=mm', $hash );
 	}
 }

@@ -110,6 +110,8 @@ function request_int( string $key, bool $nullable = FALSE ) {
 function request_recaptcha() {
 	$response = request_var( 'g-recaptcha-response' );
 	$ch = curl_init( 'https://www.google.com/recaptcha/api/siteverify' );
+	if ( $ch === FALSE )
+		failure( 'argument_not_valid', 'g-recaptcha-response' ); # TODO normally it's an external error
 	curl_setopt( $ch, CURLOPT_POST, TRUE );
 	curl_setopt( $ch, CURLOPT_POSTFIELDS, [
 		'secret' => RECAPTCHA_SECRET_KEY,

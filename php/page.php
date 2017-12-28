@@ -214,12 +214,10 @@ page_nav_add( function() {
 	global $cuser;
 	if ( is_null( $cuser ) )
 		return;
-	$hash = md5( $cuser->email_address );
-	$gravatar = sprintf( 'https://www.gravatar.com/avatar/%s?size=24&default=mm', $hash );
 ?>
 <div class="w3-dropdown-hover w3-right">
 	<button class="w3-button" title="<?= $cuser->email_address ?>">
-		<img class="w3-circle" src="<?= $gravatar ?>" style="height: 24px; width: auto; margin: -4px 0px;" />
+		<img class="w3-circle" src="<?= $cuser->get_gravatar() ?>" style="height: 24px; width: auto; margin: -4px 0px;" />
 		<span class="w3-hide-small w3-hide-medium"><?= $cuser->email_address ?></span>
 		<span class="fa fa-caret-down"></span>
 	</button>
