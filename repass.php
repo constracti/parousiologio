@@ -49,4 +49,6 @@ page_body_add( 'form_section', $fields, [
 	'recaptcha' => TRUE,
 ] );
 
+page_body_add( 'google_analytics' );
+
 page_html();

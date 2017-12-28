@@ -70,6 +70,8 @@ page_body_add( 'form_section', $fields, [
 	'recaptcha' => TRUE,
 ] );
 
+page_body_add( 'google_analytics' );
+
 } elseif ( $cuser->role === user::ROLE_GUEST ) {
 
 page_message_add( 'Περίμενε να εγκριθεί ο λογαριασμός σου από τη διαχείριση.', 'warning' );
