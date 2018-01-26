@@ -22,8 +22,4 @@ $( '#presences-sidebar>.presences-event' ).click( function() {
 if ( Storage !== undefined && localStorage.getItem( 'event' ) !== null )
 	$( '#presences-sidebar>.presences-event[data-event="' + localStorage.getItem( 'event' ) + '"]' ).click();
 
-$( window ).resize( function() {
-	$( '#presences-container' ).height( $( window ).height() - $( '#presences-container' ).position().top );
-} ).resize();
-
 } );
