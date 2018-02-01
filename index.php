@@ -70,8 +70,6 @@ page_body_add( 'form_section', $fields, [
 	'recaptcha' => TRUE,
 ] );
 
-page_body_add( 'google_analytics' );
-
 } elseif ( $cuser->role === user::ROLE_GUEST ) {
 
 page_message_add( 'Περίμενε να εγκριθεί ο λογαριασμός σου από τη διαχείριση.', 'warning' );
@@ -170,5 +168,7 @@ page_body_add( function() {
 	echo sprintf( '<a href="mailto:%s">%s</a>', MAIL_USER, MAIL_USER ) . "\n";
 	echo '</footer>' . "\n";
 } );
+
+page_body_add( 'google_analytics' );
 
 page_html();
