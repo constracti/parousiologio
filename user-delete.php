@@ -12,7 +12,7 @@ if ( $user->role >= $cuser->role )
 $user->delete();
 
 $href = site_href( 'users.php' );
-if ( $_SERVER['HTTP_REFERER'] === $href )
+if ( strpos( $_SERVER['HTTP_REFERER'], $href ) === 0 )
 	success();
 
 success( [

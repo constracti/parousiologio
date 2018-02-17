@@ -6,7 +6,7 @@ privilege( user::ROLE_ADMIN );
 
 page_title_set( 'Χρήστες' );
 
-page_style_add( site_href( 'css/table.css' ) );
+page_style_add( site_href( 'css/table.css', [ 'ver' => time() ] ) );
 
 page_script_add( site_href( 'js/table.js' ) );
 
@@ -20,7 +20,8 @@ page_nav_add( 'bar_link', [
 $table = new table( [
 	'full_screen' => TRUE,
 ] );
-$table->add( 'ονοματεπώνυμο', function( user $user ) {
+$table->add_filter( 'role', 'δικαιώματα', user::ROLES );
+$table->add( 'name', 'ονοματεπώνυμο', function( user $user ) {
 	if ( !is_null( $user->last_name ) )
 		echo sprintf( '<span>%s</span>', $user->last_name ) . "\n";
 	if ( !is_null( $user->first_name ) )
@@ -42,8 +43,8 @@ $table->add( 'ονοματεπώνυμο', function( user $user ) {
 	echo '<span>διαγραφή</span>' . "\n";
 	echo '</a>' . "\n";
 	echo '</div>' . "\n";
-} );
-$table->add( 'επικοινωνία', function( user $user ) {
+}, FALSE );
+$table->add( 'contact', 'επικοινωνία', function( user $user ) {
 	echo sprintf( '<span class="fa %s"></span>', is_null( $user->password_hash ) ? 'fa-unlock-alt' : 'fa-lock' ) . "\n";
 	echo sprintf( '<a href="mailto:%s">%s</a>', $user->email_address, $user->email_address ) . "\n";
 	echo '<div>' . "\n";
@@ -62,18 +63,18 @@ $table->add( 'επικοινωνία', function( user $user ) {
 	if ( !empty( $address ) )
 		echo sprintf( '<address>%s</address>', implode( ', ', $address ) ) . "\n";
 } );
-$table->add( 'δικαιώματα', function( user $user ) {
+$table->add( 'role', 'δικαιώματα', function( user $user ) {
 	echo user::ROLES[ $user->role ] . "\n";
 } );
-$table->add( 'εγγραφή', function( user $user ) {
+$table->add( 'reg', 'εγγραφή', function( user $user ) {
 	if ( !is_null( $user->reg_tm ) ) {
 		$dt = new dtime( $user->reg_tm );
 		echo sprintf( '<time datetime="%s" style="white-space: nowrap;">%s</time>', $dt->format( dtime::DATETIME ), $dt->format( dtime::DATE ) ) . "\n";
 	}
 	if ( !is_null( $user->reg_ip ) )
 		echo sprintf( '<span style="white-space: nowrap;">από %s</span>', $user->reg_ip ) . "\n";
-} );
-$table->add( 'ενέργεια', function( user $user ) {
+}, FALSE );
+$table->add( 'act', 'ενέργεια', function( user $user ) {
 	echo '<span style="white-space: nowrap;">';
 	if ( is_null( $user->act_tm ) ) {
 		echo 'ποτέ';
@@ -86,12 +87,25 @@ $table->add( 'ενέργεια', function( user $user ) {
 			echo 'τώρα';
 	}
 	echo '</span>' . "\n";
-} );
-page_body_add( [ $table, 'html' ], user::select( [], [
-	'last_name' => 'ASC',
-	'first_name' => 'ASC',
-	'user_id' => 'ASC',
-] ) );
+}, FALSE );
+$where = [];
+if ( isset( $_GET['role'] ) && $_GET['role'] !== '' )
+	$where['role'] = intval( $_GET['role'] );
+$orderby = [];
+switch ( $_GET['orderby'] ) {
+	case 'reg':
+		$orderby['reg_tm'] = ( $_GET['order'] !== 'desc' ) ? 'ASC' : 'DESC';
+		break;
+	case 'act':
+		$orderby['act_tm'] = ( $_GET['order'] !== 'desc' ) ? 'ASC' : 'DESC';
+		break;
+	default:
+		$orderby['last_name'] = ( $_GET['order'] !== 'desc' ) ? 'ASC' : 'DESC';
+		$orderby['first_name'] = ( $_GET['order'] !== 'desc' ) ? 'ASC' : 'DESC';
+		break;
+}
+$orderby['user_id'] = ( $_GET['order'] !== 'desc' ) ? 'ASC' : 'DESC';
+page_body_add( [ $table, 'html' ], user::select( $where, $orderby ) );
 
 page_body_add( function() {
 ?>

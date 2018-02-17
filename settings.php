@@ -50,7 +50,7 @@ require_once COMPOSER_DIR . 'whichbrowser/vendor/autoload.php';
 
 page_title_set( 'Ρυθμίσεις' );
 
-page_style_add( site_href( 'css/table.css' ) );
+page_style_add( site_href( 'css/table.css', [ 'ver' => time() ] ) );
 page_script_add( site_href( 'js/table.js' ) );
 
 page_nav_add( 'bar_link', [
@@ -83,21 +83,21 @@ if ( !empty( $fields ) )
 $table = new table( [
 	'title' => 'σημεία εισόδου',
 ] );
-$table->add( 'εφαρμογή', function( epoint $epoint ) {
+$table->add( 'browser', 'εφαρμογή', function( epoint $epoint ) {
 	echo ( new WhichBrowser\Parser( $epoint->ins_ag ) )->toString() . "\n";
 } );
-$table->add( 'εισαγωγή', function( epoint $epoint ) {
+$table->add( 'ins', 'εισαγωγή', function( epoint $epoint ) {
 	$dt = dtime::from_sql( $epoint->ins_tm );
 	echo sprintf( '<time style="white-space: nowrap;" datetime="%s">%s</time> από <span style="white-space: nowrap;">%s</span>', $dt->format( dtime::DATETIME ), $dt->format( dtime::DATE ), $epoint->ins_ip ) . "\n";
 } );
-$table->add( 'λήξη', function( epoint $epoint ) {
+$table->add( 'exp', 'λήξη', function( epoint $epoint ) {
 	$dt = dtime::from_sql( $epoint->exp_tm );
 	echo sprintf( '<time style="white-space: nowrap;" datetime="%s">%s</time>', $dt->format( dtime::DATETIME ), $dt->format( dtime::DATE ) ) . "\n";
 } );
-$table->add( 'είσοδοι', function( epoint $epoint ) {
+$table->add( 'logins', 'είσοδοι', function( epoint $epoint ) {
 	echo $epoint->logins . "\n";
 } );
-$table->add( 'ενέργειες', function( epoint $epoint ) {
+$table->add( 'actions', 'ενέργειες', function( epoint $epoint ) {
 	global $cepoint;
 	if ( $epoint->epoint_id !== $cepoint->epoint_id ) {
 		$href = site_href( 'settings.php', [ 'action' => 'epoint', 'epoint_id' => $epoint->epoint_id ] );
@@ -128,7 +128,7 @@ page_body_add( [ $table, 'html' ], epoint::select( [
 $table = new table( [
 	'title' => 'σύνδεσμοι επαλήθευσης',
 ] );
-$table->add( 'τύπος', function( vlink $vlink ) {
+$table->add( 'type', 'τύπος', function( vlink $vlink ) {
 	switch ( $vlink->type ) {
 		case 'register':
 			echo 'εγγραφή' . "\n";
@@ -141,13 +141,13 @@ $table->add( 'τύπος', function( vlink $vlink ) {
 			break;
 	}
 } );
-$table->add( 'εισαγωγή', function( vlink $vlink ) {
+$table->add( 'ins', 'εισαγωγή', function( vlink $vlink ) {
 	$dt = dtime::from_sql( $vlink->ins_tm );
 	echo sprintf( '<time style="white-space: nowrap;" datetime="%s">%s</time> από <span style="white-space: nowrap;">%s</span>', $dt->format( dtime::DATETIME ), $dt->format( dtime::DATE ), $vlink->ins_ip ) . "\n";
 	echo '<br />' . "\n";
 	echo ( new WhichBrowser\Parser( $vlink->ins_ag ) )->toString() . "\n";
 } );
-$table->add( 'ενεργοποίηση', function( vlink $vlink ) {
+$table->add( 'act', 'ενεργοποίηση', function( vlink $vlink ) {
 	if ( is_null( $vlink->act_tm ) ) {
 		$dt = dtime::from_sql( $vlink->exp_tm );
 		echo sprintf( 'μέχρι <time style="white-space: nowrap;" datetime="%s">%s</time>', $dt->format( dtime::DATETIME ), $dt->format( dtime::DATE ) ) . "\n";
@@ -158,7 +158,7 @@ $table->add( 'ενεργοποίηση', function( vlink $vlink ) {
 		echo ( new WhichBrowser\Parser( $vlink->act_ag ) )->toString() . "\n";
 	}
 } );
-$table->add( 'ενέργειες', function( vlink $vlink ) {
+$table->add( 'actions', 'ενέργειες', function( vlink $vlink ) {
 	$href = site_href( 'settings.php', [ 'action' => 'vlink', 'vlink_id' => $vlink->vlink_id ] );
 	echo sprintf( '<a href="%s" class="link link-delete link-ajax" data-remove="tr">', $href ) . "\n";
 	echo '<span class="fa fa-trash"></span>' . "\n";
