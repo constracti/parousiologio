@@ -167,6 +167,13 @@ page_body_add( function() {
 	echo '<span>επικοινωνία:</span>' . "\n";
 	echo sprintf( '<a href="mailto:%s">%s</a>', MAIL_USER, MAIL_USER ) . "\n";
 	echo '</footer>' . "\n";
+	echo '<footer class="w3-panel w3-center w3-small">' . "\n";
+	echo sprintf( '<img src="%s" />', site_href( 'img/agonistes.png' ) ) . "\n";
+	echo '<a href="https://agonistes.gr/" target="_blank" title="Χαρούμενοι Αγωνιστές">Χαρούμενοι Αγωνιστές</a>' . "\n";
+	echo '<span>|</span>' . "\n";
+	echo sprintf( '<img src="%s" />', site_href( 'img/synathlountes.png' ) ) . "\n";
+	echo '<a href="https://synathlountes.agonistes.gr/" target="_blank" title="Συναθλούντες">Συναθλούντες</a>' . "\n";
+	echo '</footer>' . "\n";
 } );
 
 page_body_add( 'google_analytics' );

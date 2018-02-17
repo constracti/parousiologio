@@ -110,28 +110,6 @@ page_nav_add( function() {
 } );
 
 page_nav_add( function() {
-?>
-<div class="w3-dropdown-hover w3-right">
-	<button class="w3-button" title="σύνδεσμοι">
-		<span class="fa fa-external-link"></span>
-		<span class="w3-hide-small w3-hide-medium">σύνδεσμοι</span>
-		<span class="fa fa-caret-down"></span>
-	</button>
-	<div class="w3-dropdown-content w3-bar-block w3-theme-l2">
-		<a class="w3-bar-item w3-button" href="https://agonistes.gr/" target="_blank" title="Χαρούμενοι Αγωνιστές">
-			<img src="<?= site_href( 'img/agonistes.png' ) ?>" style="margin: 0px;" />
-			<span>Χαρούμενοι Αγωνιστές</span>
-		</a>
-		<a class="w3-bar-item w3-button" href="https://synathlountes.agonistes.gr/" target="_blank" title="Συναθλούντες">
-			<img src="<?= site_href( 'img/synathlountes.png' ) ?>" style="margin: 0px;" />
-			<span>Συναθλούντες</span>
-		</a>
-	</div>
-</div>
-<?php
-} );
-
-page_nav_add( function() {
 	global $cuser;
 	if ( is_null( $cuser ) || $cuser->role < user::ROLE_OBSER )
 		return;
@@ -522,6 +500,8 @@ function google_analytics() {
 /*************
  * page html *
  *************/
+
+# TODO header, breadcrumbs, sidebar, footer
 
 function page_html() {
 	global $cuser;
