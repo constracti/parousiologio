@@ -1,5 +1,8 @@
 $( function() {
 
+if ( ! $( '#presences-sidebar>.presences-event' ).length )
+	$( '#presences-container' ).addClass( 'presences-container-expanded' );
+
 $( '#presences-sidebar>.presences-event' ).click( function() {
 	var event = $( this ).data( 'event' );
 	var selected = !$( this ).hasClass( 'w3-theme' );
