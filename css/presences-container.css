@@ -19,6 +19,9 @@
 #presences-container.presences-container-expanded>#presences-sidebar>.presences-event>:last-child {
 	display: none;
 }
+#presences-table {
+	margin-bottom: 100px;
+}
 #presences-table .presences-property {
 	display: none;
 }
