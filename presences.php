@@ -129,6 +129,8 @@ page_body_add( function() {
 		echo '</tr>' . "\n";
 	} );
 	$panel->add( 'event_id', function( $item ) {
+		if ( is_null( $item->event_id ) )
+			return;
 		global $events;
 		$event = $events[ $item->event_id ];
 		$dt = new dtime( $event->event_date_fixed );

@@ -95,7 +95,7 @@ JOIN `xa_child` ON `xa_child`.`child_id` IN (
 	JOIN `xa_target` ON `xa_target`.`team_id` = `xa_team`.`team_id` AND `xa_target`.`grade_id` = `xa_follow`.`grade_id`
 	WHERE `xa_team`.`team_id` = ?
 )
-JOIN `xa_event` ON `xa_event`.`event_id` IN (
+LEFT JOIN `xa_event` ON `xa_event`.`event_id` IN (
 	SELECT `xa_event`.`event_id`
 	FROM `xa_team`
 	JOIN `xa_target` ON `xa_target`.`team_id` = `xa_team`.`team_id`
