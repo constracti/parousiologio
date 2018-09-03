@@ -21,6 +21,26 @@ class season extends entity {
 		return array_shift( $items );
 	}
 
+	public function select_prev() {
+		global $db;
+		$stmt = $db->prepare( '
+SELECT *
+FROM `xa_season`
+WHERE `year` < ?
+ORDER BY `year` DESC
+LIMIT 1
+		' );
+		$stmt->bind_param( 'i', $this->year );
+		$stmt->execute();
+		$rslt = $stmt->get_result();
+		$stmt->close();
+		$items = [];
+		while ( !is_null( $item = $rslt->fetch_object( 'season' ) ) )
+			$items[] = $item;
+		$rslt->free();
+		return array_shift( $items );
+	}
+
 	public static function select_options(): array {
 		$seasons = season::select( [], [
 			'year' => 'DESC'
