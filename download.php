@@ -18,6 +18,23 @@ $cols = array_merge( [
 ], child::COLS );
 $children = $team->select_children();
 
+$cols['meta_mobile'] = 'κινητό ενημέρωσης';
+foreach ( $children as $child ) {
+	switch ( $child->get_meta( 'mobile' ) ) {
+		case 'self':
+			$child->meta_mobile = $child->mobile_phone;
+			break;
+		case 'fath':
+			$child->meta_mobile = $child->fath_mobile;
+			break;
+		case 'moth':
+			$child->meta_mobile = $child->moth_mobile;
+			break;
+		default:
+			$child->meta_mobile = '';
+	}
+}
+
 require_once COMPOSER_DIR . 'phpexcel/vendor/autoload.php';
 
 $objPHPExcel = new PHPExcel();
