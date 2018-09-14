@@ -22,6 +22,7 @@ $table = new table( [
 ] );
 $table->add_filter( 'role', 'δικαιώματα', user::ROLES );
 $table->add( 'name', 'ονοματεπώνυμο', function( user $user ) {
+	echo sprintf( '<img src="%s" style="float: left; margin-right: 8px;" />', $user->get_gravatar( 36 ) ) . "\n";
 	if ( !is_null( $user->last_name ) )
 		echo sprintf( '<span>%s</span>', $user->last_name ) . "\n";
 	if ( !is_null( $user->first_name ) )

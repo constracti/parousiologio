@@ -195,7 +195,7 @@ page_nav_add( function() {
 ?>
 <div class="w3-dropdown-hover w3-right">
 	<button class="w3-button" title="<?= $cuser->email_address ?>">
-		<img class="w3-circle" src="<?= $cuser->get_gravatar() ?>" style="height: 24px; width: auto; margin: -4px 0px;" />
+		<img class="w3-circle" src="<?= $cuser->get_gravatar( 24 ) ?>" style="margin: -4px 0px;" />
 		<span class="w3-hide-small w3-hide-medium"><?= $cuser->email_address ?></span>
 		<span class="fa fa-caret-down"></span>
 	</button>

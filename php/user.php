@@ -214,8 +214,8 @@ WHERE `user_id` = ? AND `team_id` IN (
 		return $http_code !== 404;
 	}
 
-	public function get_gravatar(): string {
+	public function get_gravatar( int $size = 24, string $default = 'mm' ): string {
 		$hash = md5( $this->email_address );
-		return sprintf( 'https://www.gravatar.com/avatar/%s?size=24&default=mm', $hash );
+		return sprintf( 'https://www.gravatar.com/avatar/%s?size=%s&default=%s', $hash, $size, $default );
 	}
 }
