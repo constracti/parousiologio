@@ -176,6 +176,4 @@ page_body_add( function() {
 	echo '</footer>' . "\n";
 } );
 
-page_body_add( 'google_analytics' );
-
 page_html();
