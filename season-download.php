@@ -12,9 +12,9 @@ $cols = array_merge( [
 	'first_name' => 'όνομα',
 ], child::COLS );
 $children = ( function(): array {
-		global $db;
-		global $cseason;
-		$stmt = $db->prepare( '
+	global $db;
+	global $cseason;
+	$stmt = $db->prepare( '
 SELECT `xa_child`.*, `xa_location`.`location_name`, `xa_grade`.`grade_name`
 FROM `xa_follow`
 JOIN `xa_child` ON `xa_follow`.`child_id` = `xa_child`.`child_id`
@@ -23,17 +23,34 @@ LEFT JOIN `xa_location` ON `xa_location`.`location_id` = `xa_follow`.`location_i
 WHERE `xa_follow`.`season_id` = ?
 ORDER BY `xa_location`.`is_swarm` DESC, `xa_location`.`location_name` ASC, `xa_location`.`location_id` ASC,
 `xa_child`.`last_name` ASC, `xa_child`.`first_name` ASC, `xa_child`.`child_id` ASC
-		' );
-		$stmt->bind_param( 'i', $cseason->season_id );
-		$stmt->execute();
-		$rslt = $stmt->get_result();
-		$stmt->close();
-		$children = [];
-		while ( !is_null( $child = $rslt->fetch_object( 'child' ) ) )
-			$children[ $child->child_id ] = $child;
-		$rslt->free();
-		return $children;
+	' );
+	$stmt->bind_param( 'i', $cseason->season_id );
+	$stmt->execute();
+	$rslt = $stmt->get_result();
+	$stmt->close();
+	$children = [];
+	while ( !is_null( $child = $rslt->fetch_object( 'child' ) ) )
+		$children[ $child->child_id ] = $child;
+	$rslt->free();
+	return $children;
 } )();
+
+$cols['meta_mobile'] = 'κινητό ενημέρωσης';
+foreach ( $children as $child ) {
+	switch ( $child->get_meta( 'mobile' ) ) {
+		case 'self':
+			$child->meta_mobile = $child->mobile_phone;
+			break;
+		case 'fath':
+			$child->meta_mobile = $child->fath_mobile;
+			break;
+		case 'moth':
+			$child->meta_mobile = $child->moth_mobile;
+			break;
+		default:
+			$child->meta_mobile = NULL;
+	}
+}
 
 require_once COMPOSER_DIR . 'phpexcel/vendor/autoload.php';
 

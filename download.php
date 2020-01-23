@@ -31,7 +31,7 @@ foreach ( $children as $child ) {
 			$child->meta_mobile = $child->moth_mobile;
 			break;
 		default:
-			$child->meta_mobile = '';
+			$child->meta_mobile = NULL;
 	}
 }
 
