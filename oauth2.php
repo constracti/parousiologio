@@ -8,7 +8,6 @@ $provider = request_var( 'provider' );
 
 switch ( $provider ) {
 	case 'google':
-		require_once COMPOSER_DIR . 'oauth2-google/vendor/autoload.php';
 		$provider = new League\OAuth2\Client\Provider\Google( [
 			'clientId'     => GOOGLE_CLIENT_ID,
 			'clientSecret' => GOOGLE_CLIENT_SECRET,
@@ -17,7 +16,6 @@ switch ( $provider ) {
 		$scope = [ 'email' ];
 		break;
 	case 'microsoft':
-		require_once COMPOSER_DIR . 'oauth2-microsoft/vendor/autoload.php';
 		$provider = new Stevenmaguire\OAuth2\Client\Provider\Microsoft( [
 			'clientId'     => MICROSOFT_CLIENT_ID,
 			'clientSecret' => MICROSOFT_CLIENT_SECRET,
@@ -26,7 +24,6 @@ switch ( $provider ) {
 		$scope = [ 'wl.emails' ];
 		break;
 	case 'yahoo':
-		require_once COMPOSER_DIR . 'oauth2-yahoo/vendor/autoload.php';
 		$provider = new Hayageek\OAuth2\Client\Provider\Yahoo( [
 			'clientId'     => YAHOO_CLIENT_ID,
 			'clientSecret' => YAHOO_CLIENT_SECRET,

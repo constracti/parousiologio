@@ -46,8 +46,6 @@ if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
  * main *
  ********/
 
-require_once COMPOSER_DIR . 'whichbrowser/vendor/autoload.php';
-
 page_title_set( 'Ρυθμίσεις' );
 
 page_style_add( site_href( 'css/table.css', [ 'ver' => time() ] ) );

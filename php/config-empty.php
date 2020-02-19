@@ -3,7 +3,6 @@
 define( 'SITE_DIR', '' );
 define( 'SITE_URL', '' );
 define( 'SITE_NAME', '' );
-define( 'COMPOSER_DIR', '' );
 
 
 /**********

@@ -2,6 +2,8 @@
 
 require_once 'config.php';
 
+require_once 'vendor/autoload.php';
+
 if ( $_SERVER['REQUEST_METHOD'] === 'POST' )
 	require_once SITE_DIR . 'php/ajax.php';
 else

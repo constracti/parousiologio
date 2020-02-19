@@ -52,30 +52,28 @@ foreach ( $children as $child ) {
 	}
 }
 
-require_once COMPOSER_DIR . 'phpexcel/vendor/autoload.php';
-
-$objPHPExcel = new PHPExcel();
-$objPHPExcel->getProperties()
+$spreadsheet = new PhpOffice\PhpSpreadsheet\Spreadsheet();
+$spreadsheet->getProperties()
 	->setCreator( SITE_NAME )
 	->setLastModifiedBy( SITE_NAME )
 	->setTitle( $title );
 
-$sheet = $objPHPExcel->getActiveSheet();
+$sheet = $spreadsheet->getActiveSheet();
 
 $sheet->setTitle( $title );
 
 $r = 1;
 foreach ( array_values( $cols ) as $c => $colname )
-	$sheet->setCellValueByColumnAndRow( $c, $r, $colname );
+	$sheet->setCellValueByColumnAndRow( $c + 1, $r, $colname );
 
 foreach ( $children as $child ) {
 	$r++;
 	foreach ( array_keys( $cols ) as $c => $col )
-		$sheet->setCellValueByColumnAndRow( $c, $r, $child->$col );
+		$sheet->setCellValueByColumnAndRow( $c + 1, $r, $child->$col );
 }
 
 header( 'Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' );
 header( sprintf( 'Content-Disposition: attachment; filename="%s.xlsx"', $title ) );
-$objWriter = PHPExcel_IOFactory::createWriter( $objPHPExcel, 'Excel2007' );
-$objWriter->save( 'php://output' );
+$writer = new PhpOffice\PhpSpreadsheet\Writer\Xlsx( $spreadsheet );
+$writer->save( 'php://output' );
 exit;

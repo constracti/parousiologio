@@ -1,7 +1,5 @@
 <?php
 
-require_once COMPOSER_DIR . 'phpmailer/vendor/autoload.php';
-
 # TODO mailer in separate thread
 
 class mailer extends PHPMailer\PHPMailer\PHPMailer {
