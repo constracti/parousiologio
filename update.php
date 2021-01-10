@@ -114,6 +114,10 @@ $fields = [
 		'placeholder' => 'κινητό ενημέρωσης',
 		'value' => $child->get_meta( 'mobile' ),
 	] ),
+	'meta_comments' => new field( 'meta_comments', [
+		'placeholder' => 'σχόλια',
+		'value' => $child->get_meta('comments' ),
+	] ),
 ];
 
 if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
@@ -136,6 +140,7 @@ if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
 	$child->city = $fields['city']->post();
 	$child->postal_code = $fields['postal_code']->post();
 	$child->set_meta( 'mobile', $fields['meta_mobile']->post() );
+	$child->set_meta( 'comments', $fields['meta_comments']->post() );
 	$child->update();
 	$follow->grade_id = $fields['grade_id']->post();
 	$follow->update();

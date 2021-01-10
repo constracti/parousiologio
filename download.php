@@ -35,6 +35,11 @@ foreach ( $children as $child ) {
 	}
 }
 
+$cols['meta_comments'] = 'σχόλια';
+foreach ( $children as $child ) {
+	$child->meta_comments = $child->get_meta( 'comments' );
+}
+
 $spreadsheet = new PhpOffice\PhpSpreadsheet\Spreadsheet();
 $spreadsheet->getProperties()
 	->setCreator( SITE_NAME )

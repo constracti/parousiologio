@@ -214,14 +214,13 @@ abstract class entity {
 			$meta = [];
 		else
 			$meta = unserialize( $this->meta );
-		if ( is_null( $value ) ) {
-			if ( array_key_exists( $key, $meta ) )
-				unset( $meta[ $key ] );
-			if ( empty( $meta ) )
-				$this->meta = NULL;
-		} else {
+		if ( !is_null( $value ) )
 			$meta[ $key ] = $value;
+		elseif ( array_key_exists( $key, $meta ) )
+			unset( $meta[ $key ] );
+		if ( empty( $meta ) )
+			$this->meta = NULL;
+		else
 			$this->meta = serialize( $meta );
-		}
 	}
 }

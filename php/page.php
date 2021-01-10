@@ -533,6 +533,9 @@ body>.w3-bar:first-child>.w3-dropdown-hover>.w3-dropdown-content>.w3-bar-item {
 body>.w3-bar:first-child>.w3-dropdown-hover.w3-right>.w3-dropdown-content {
 	right: 0px;
 }
+.w3-input, .w3-select {
+	min-height: 40px;
+}
 .action {
 	position: fixed;
 	right: 50px;
