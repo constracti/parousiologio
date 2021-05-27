@@ -40,7 +40,12 @@ class epoint extends entity {
 		$epoint->exp_tm = dtime::php2sql( $exp_tm );
 		$epoint->logins = 0;
 		$epoint->insert();
-		setcookie( 'epoint', $epoint->epoint_id . self::DELIMITER . $code, $exp_tm );
+		setcookie( 'epoint', $epoint->epoint_id . self::DELIMITER . $code, [
+			'expires' => $exp_tm,
+			'secure' => TRUE,
+			'httponly' => TRUE,
+			'samesite' => 'Lax',
+		] );
 	}
 
 	public static function read() {
@@ -73,7 +78,12 @@ class epoint extends entity {
 		if ( !is_null( $epoint->exp_tm ) ) {
 			$exp_tm = $_SERVER['REQUEST_TIME'] + self::LONG;
 			$epoint->exp_tm = dtime::php2sql( $exp_tm );
-			setcookie( 'epoint', $_COOKIE['epoint'], $exp_tm );
+			setcookie( 'epoint', $_COOKIE['epoint'], [
+				'expires' => $exp_tm,
+				'secure' => TRUE,
+				'httponly' => TRUE,
+				'samesite' => 'Lax',
+			] );
 		}
 		$epoint->update();
 		return $epoint;
