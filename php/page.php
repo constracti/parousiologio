@@ -45,9 +45,9 @@ function page_style_add( string $style ) {
 	$page_styles[] = $style;
 }
 
-page_style_add( 'https://www.w3schools.com/w3css/4/w3.css' );
-page_style_add( 'https://www.w3schools.com/lib/w3-theme-blue.css' );
-page_style_add( 'https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css' );
+page_style_add( site_href( 'lib/w3css/4.1.0/w3.css' ) );
+page_style_add( site_href( 'lib/w3css/themes/w3-theme-blue.css' ) );
+page_style_add( site_href( 'lib/font-awesome/4.7.0/css/font-awesome.min.css' ) );
 
 
 /****************
@@ -61,7 +61,7 @@ function page_script_add( string $script ) {
 	$page_scripts[] = $script;
 }
 
-page_script_add( 'https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js' );
+page_script_add( site_href( 'lib/jquery-3.6.0.min.js' ) );
 
 
 /*************
