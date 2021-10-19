@@ -49,20 +49,9 @@ $table->add( 'contact', 'επικοινωνία', function( user $user ) {
 	echo sprintf( '<span class="fa %s"></span>', is_null( $user->password_hash ) ? 'fa-unlock-alt' : 'fa-lock' ) . "\n";
 	echo sprintf( '<a href="mailto:%s">%s</a>', $user->email_address, $user->email_address ) . "\n";
 	echo '<div>' . "\n";
-	if ( !is_null( $user->home_phone ) )
-		echo sprintf( '<a href="tel:%s">%s</a>', $user->home_phone, $user->home_phone ) . "\n";
 	if ( !is_null( $user->mobile_phone ) )
 		echo sprintf( '<a href="tel:%s">%s</a>', $user->mobile_phone, $user->mobile_phone ) . "\n";
 	echo '</div>' . "\n";
-	$address = [];
-	if ( !is_null( $user->address ) )
-		$address[] = $user->address;
-	if ( !is_null( $user->city ) )
-		$address[] = $user->city;
-	if ( !is_null( $user->postal_code ) )
-		$address[] = $user->postal_code;
-	if ( !empty( $address ) )
-		echo sprintf( '<address>%s</address>', implode( ', ', $address ) ) . "\n";
 } );
 $table->add( 'role', 'δικαιώματα', function( user $user ) {
 	echo user::ROLES[ $user->role ] . "\n";

@@ -192,11 +192,20 @@ page_nav_add( function() {
 	global $cuser;
 	if ( is_null( $cuser ) )
 		return;
+	$name = [];
+	if ( !is_null( $cuser->first_name ) )
+		$name[] = $cuser->first_name;
+	if ( !is_null( $cuser->last_name ) )
+		$name[] = $cuser->last_name;
+	if ( !empty( $name ) )
+		$name = implode( ' ', $name );
+	else
+		$name = $cuser->email_address;
 ?>
 <div class="w3-dropdown-hover w3-right">
 	<button class="w3-button" title="<?= $cuser->email_address ?>">
 		<img class="w3-circle" src="<?= $cuser->get_gravatar( 24 ) ?>" style="margin: -4px 0px;" />
-		<span class="w3-hide-small w3-hide-medium"><?= $cuser->email_address ?></span>
+		<span class="w3-hide-small w3-hide-medium"><?= $name ?></span>
 		<span class="fa fa-caret-down"></span>
 	</button>
 	<div class="w3-dropdown-content w3-bar-block w3-theme-l2">

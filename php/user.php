@@ -61,15 +61,8 @@ class user extends entity {
 	const COLS = [
 		'last_name'     => 'επώνυμο',
 		'first_name'    => 'όνομα',
-		'home_phone'    => 'σταθερό τηλέφωνο',
-		'mobile_phone'  => 'κινητό τηλέφωνο',
+		'mobile_phone'  => 'τηλέφωνο',
 		'email_address' => 'διεύθυνση email',
-		'occupation'    => 'απασχόληση',
-		'grade_name'    => 'τάξη',
-		'first_year'    => 'πρώτο έτος διακονίας',
-		'address'       => 'διεύθυνση',
-		'city'          => 'πόλη',
-		'postal_code'   => 'ταχυδρομικός κώδικας',
 	];
 
 	public static function select_by_email_address( string $email_address ) {
