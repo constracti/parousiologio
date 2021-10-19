@@ -1,7 +1,7 @@
 {
     "require": {
         "whichbrowser/parser": "^2.0",
-        "phpmailer/phpmailer": "^6.1",
+        "phpmailer/phpmailer": "^6.5",
         "league/oauth2-google": "^3.0",
         "stevenmaguire/oauth2-microsoft": "^2.2",
         "hayageek/oauth2-yahoo": "^2.0",
