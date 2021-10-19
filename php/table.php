@@ -104,7 +104,7 @@ class table {
 				echo sprintf( '<td data-col="%s" data-colname="%s">', $key, $col['name'] ) . "\n";
 				$col['cell']( $item );
 				if ( $primary )
-					echo '<div><span class="fa"></div>' . "\n";
+					echo '<div><span class="fa"></span></div>' . "\n";
 				echo '</td>' . "\n";
 				$primary = FALSE;
 			}
