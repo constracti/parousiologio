@@ -245,21 +245,36 @@ page_nav_add( function() {
 $page_messages = [];
 
 function page_message_color( string $type ): string {
-	switch( $type ) {
+	switch ( $type ) {
 		case 'success':
-			return 'w3-green';
+			return 'w3-pale-green w3-border-green';
 		case 'info':
-			return 'w3-blue';
+			return 'w3-pale-blue w3-border-blue';
 		case 'warning':
-			return 'w3-orange';
+			return 'w3-pale-yellow w3-border-orange';
 		case 'error':
-			return 'w3-red';
+			return 'w3-pale-red w3-border-red';
 		default:
-			return 'w3-theme';
+			return 'w3-theme-l4 w3-border-theme';
 	}
 }
 
-function page_message_add( string $html, string $type = '' ) {
+function page_message_icon( string $type ): string {
+	switch ( $type ) {
+		case 'success':
+			return 'fa fa-fw fa-check-circle';
+		case 'info':
+			return 'fa fa-fw fa-info-circle';
+		case 'warning':
+			return 'fa fa-fw fa-exclamation-circle';
+		case 'error':
+			return 'fa fa-fw fa-times-circle';
+		default:
+			return 'fa fa-fw fa-comment';
+	}
+}
+
+function page_message_add( string $html, string $type = '' ): void {
 	global $page_messages;
 	$page_messages[] = [
 		'html' => $html,
@@ -595,11 +610,12 @@ body>.w3-bar:first-child>.w3-dropdown-hover.w3-right>.w3-dropdown-content {
 		page_message_add( sprintf( 'Συμπλήρωσε τα στοιχεία σου στο <a href="%s">προφίλ</a>.', site_href( 'profile.php' ) ), 'warning' );
 	foreach ( $page_messages as $message ) {
 ?>
-		<div class="w3-panel w3-content">
-			<div class="w3-container w3-round w3-leftbar <?= page_message_color( $message['type'] ) ?>">
-				<p><?= $message['html'] ?></p>
+		<section class="w3-panel w3-content">
+			<div class="flex w3-border w3-leftbar <?= page_message_color( $message['type'] ) ?>">
+				<span class="<?= page_message_icon( $message['type'] ) ?>"></span>
+				<p style="flex-grow: 1;"><?= $message['html'] ?></p>
 			</div>
-		</div>
+		</section>
 <?php
 	}
 	foreach ( $page_bodies as $body )
