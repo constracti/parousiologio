@@ -36,21 +36,13 @@ page_body_add( function() {
 <section class="w3-panel w3-content">
 	<div class="w3-card-4 w3-round w3-theme-l4">
 		<div class="w3-container">
-			<h3>είσοδος με λογαριασμό κοινωνικής δικτύωσης</h3>
+			<h3>είσοδος με εξωτερική υπηρεσία</h3>
 		</div>
 		<div class="w3-container">
 			<div class="w3-section">
-				<a class="w3-button w3-round w3-red" href="<?= site_href( 'oauth2.php', [ 'provider' => 'google' ] ) ?>">
+				<a class="w3-button w3-round w3-red" href="<?= site_href( 'oauth2.php' ) ?>">
 					<span class="fa fa-google"></span>
 					<span class="w3-hide-small">Google</span>
-				</a>
-				<a class="w3-button w3-round w3-blue" href="<?= site_href( 'oauth2.php', [ 'provider' => 'microsoft' ] ) ?>">
-					<span class="fa fa-windows"></span>
-					<span class="w3-hide-small">Microsoft</span>
-				</a>
-				<a class="w3-button w3-round w3-purple" href="<?= site_href( 'oauth2.php', [ 'provider' => 'yahoo' ] ) ?>">
-					<span class="fa fa-yahoo"></span>
-					<span class="w3-hide-small">Yahoo</span>
 				</a>
 			</div>
 		</div>

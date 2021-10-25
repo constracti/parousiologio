@@ -4,41 +4,27 @@ require_once 'php/core.php';
 
 logout();
 
-$provider = request_var( 'provider' );
-
-switch ( $provider ) {
-	case 'google':
-		$provider = new League\OAuth2\Client\Provider\Google( [
-			'clientId'     => GOOGLE_CLIENT_ID,
-			'clientSecret' => GOOGLE_CLIENT_SECRET,
-			'redirectUri'  => site_href( 'oauth2.php', [ 'provider' => 'google' ] ),
-		] );
-		$scope = [ 'email' ];
-		break;
-	case 'microsoft':
-		$provider = new Stevenmaguire\OAuth2\Client\Provider\Microsoft( [
-			'clientId'     => MICROSOFT_CLIENT_ID,
-			'clientSecret' => MICROSOFT_CLIENT_SECRET,
-			'redirectUri'  => site_href( 'oauth2.php', [ 'provider' => 'microsoft' ] ),
-		] );
-		$scope = [ 'wl.emails' ];
-		break;
-	case 'yahoo':
-		$provider = new Hayageek\OAuth2\Client\Provider\Yahoo( [
-			'clientId'     => YAHOO_CLIENT_ID,
-			'clientSecret' => YAHOO_CLIENT_SECRET,
-			'redirectUri'  => site_href( 'oauth2.php', [ 'provider' => 'yahoo' ] ),
-		] );
-		$scope = [ 'openid' ];
-		break;
-	default:
-		failure( 'argument_not_valid', 'provider' );
-}
+$client = new Google\Client( [
+	'client_id' => GOOGLE_CLIENT_ID,
+	'client_secret' => GOOGLE_CLIENT_SECRET,
+	'scopes' => [
+		Google\Service\Oauth2::USERINFO_EMAIL,
+	],
+	'redirect_uri' => site_href( 'oauth2.php' ),
+	'state' => OAUTH2_SECRET,
+] );
 
 if ( array_key_exists( 'code', $_GET ) ) {
-	$token = $provider->getAccessToken( 'authorization_code', [ 'code' => $_GET['code'] ] );
-	$owner = $provider->getResourceOwner( $token );
-	$email_address = filter_var( $owner->getEmail(), FILTER_VALIDATE_EMAIL );
+	if ( !is_string( $_GET['code'] ) )
+		failure( 'Ο πάροχος απάντησε με μη έγκυρο κωδικό.' );
+	if ( !array_key_exists( 'state', $_GET ) || !is_string( $_GET['state'] ) || $_GET['state'] !== OAUTH2_SECRET )
+		failure( 'Ο πάροχος κλήθηκε από μη έγκυρη πηγή.' );
+	$client->authenticate( $_GET['code'] );
+	$access_token = $client->getAccessToken();
+	$client->setAccessToken( $access_token );
+	$oauth = new Google\Service\Oauth2( $client );
+	$userinfo = $oauth->userinfo->get();
+	$email_address = filter_var( $userinfo->email, FILTER_VALIDATE_EMAIL );
 	if ( $email_address === FALSE )
 		failure( 'Ο πάροχος απάντησε με μη έγκυρη διεύθυνση email.' );
 	$user = user::select_by_email_address( $email_address );
@@ -57,8 +43,6 @@ if ( array_key_exists( 'code', $_GET ) ) {
 } elseif ( array_key_exists( 'error', $_GET ) ) {
 	failure( sprintf( 'Η αυθεντικοποίηση δεν ήταν επιτυχής.<br /><code>%s</code>', $_GET['error'] ) );
 } else {
-	$options = [
-		'scope' => $scope,
-	];
-	redirect( $provider->getAuthorizationUrl( $options ) );
+	$auth_url = $client->createAuthUrl();
+	redirect( filter_var( $auth_url, FILTER_SANITIZE_URL ) );
 }

@@ -20,10 +20,7 @@ define( 'MAIL_PASS', '' );
 
 define( 'GOOGLE_CLIENT_ID', '' );
 define( 'GOOGLE_CLIENT_SECRET', '' );
-define( 'MICROSOFT_CLIENT_ID', '' );
-define( 'MICROSOFT_CLIENT_SECRET', '' );
-define( 'YAHOO_CLIENT_ID', '' );
-define( 'YAHOO_CLIENT_SECRET', '' );
+define( 'OAUTH2_SECRET', '' );
 
 
 /************
