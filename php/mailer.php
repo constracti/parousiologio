@@ -1,7 +1,5 @@
 <?php
 
-# TODO mailer in separate thread
-
 class mailer extends PHPMailer\PHPMailer\PHPMailer {
 
 	const NEWLINE = "\r\n";
@@ -11,8 +9,8 @@ class mailer extends PHPMailer\PHPMailer\PHPMailer {
 		$this->isSMTP();
 		$this->SMTPDebug = 0;
 		$this->Host = MAIL_HOST;
-		$this->Port = 587;
-		$this->SMTPSecure = 'tls';
+		$this->Port = 465;
+		$this->SMTPSecure = 'ssl';
 		$this->SMTPAuth = TRUE;
 		$this->Username = MAIL_USER;
 		$this->Password = MAIL_PASS;
