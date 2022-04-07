@@ -82,19 +82,19 @@ $where = [];
 if ( isset( $_GET['role'] ) && $_GET['role'] !== '' )
 	$where['role'] = intval( $_GET['role'] );
 $orderby = [];
-switch ( $_GET['orderby'] ) {
+switch ( isset( $_GET['orderby'] ) ? $_GET['orderby'] : NULL ) {
 	case 'reg':
-		$orderby['reg_tm'] = ( $_GET['order'] !== 'desc' ) ? 'ASC' : 'DESC';
+		$orderby['reg_tm'] = !isset( $_GET['order'] ) || $_GET['order'] !== 'desc' ? 'ASC' : 'DESC';
 		break;
 	case 'act':
-		$orderby['act_tm'] = ( $_GET['order'] !== 'desc' ) ? 'ASC' : 'DESC';
+		$orderby['act_tm'] = !isset( $_GET['order'] ) || $_GET['order'] !== 'desc' ? 'ASC' : 'DESC';
 		break;
 	default:
-		$orderby['last_name'] = ( $_GET['order'] !== 'desc' ) ? 'ASC' : 'DESC';
-		$orderby['first_name'] = ( $_GET['order'] !== 'desc' ) ? 'ASC' : 'DESC';
+		$orderby['last_name'] = !isset( $_GET['order'] ) || $_GET['order'] !== 'desc' ? 'ASC' : 'DESC';
+		$orderby['first_name'] = !isset( $_GET['order'] ) || $_GET['order'] !== 'desc' ? 'ASC' : 'DESC';
 		break;
 }
-$orderby['user_id'] = ( $_GET['order'] !== 'desc' ) ? 'ASC' : 'DESC';
+$orderby['user_id'] = !isset( $_GET['order'] ) || $_GET['order'] !== 'desc' ? 'ASC' : 'DESC';
 page_body_add( [ $table, 'html' ], user::select( $where, $orderby ) );
 
 page_body_add( function() {

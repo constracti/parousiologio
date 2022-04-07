@@ -73,7 +73,7 @@ abstract class entity {
 		return $items;
 	}
 
-	public function select_by( string $prop, $value ) {
+	public static function select_by( string $prop, $value ) {
 		$items = self::select( [ $prop => $value ], [], 1 );
 		return array_shift( $items );
 	}

@@ -42,13 +42,13 @@ class table {
 			echo sprintf( '<h3>%s</h3>', $this->arguments['title'] ) . "\n";
 		if ( !empty( $this->filters ) ) {
 			echo '<form>' . "\n";
-			echo sprintf( '<input type="hidden" name="orderby" value="%s" />', htmlspecialchars( $_GET['orderby'] ) ) . "\n";
-			echo sprintf( '<input type="hidden" name="order" value="%s" />', htmlspecialchars( $_GET['order'] ) ) . "\n";
+			echo sprintf( '<input type="hidden" name="orderby" value="%s" />', htmlspecialchars( isset( $_GET['orderby'] ) ? $_GET['orderby'] : '' ) ) . "\n";
+			echo sprintf( '<input type="hidden" name="order" value="%s" />', htmlspecialchars( isset( $_GET['orderby'] ) ? $_GET['order'] : '' ) ) . "\n";
 			foreach ( $this->filters as $key => $filter ) {
 				echo sprintf( '<select class="w3-select" name="%s" style="width: initial;">', $key ) . "\n";
 				echo sprintf( '<option value="">%s</option>', $filter['name'] ) . "\n";
 				foreach ( $filter['options'] as $value => $option ) {
-					$selected = ( $_GET[$key] === strval( $value ) ) ? ' selected="selected"' : '';
+					$selected = isset( $_GET[$key] ) && $_GET[$key] === strval( $value ) ? ' selected="selected"' : '';
 					echo sprintf( '<option value="%s"%s>%s</option>', $value, $selected, $option ) . "\n";
 				}
 				echo '</select>' . "\n";
@@ -63,8 +63,8 @@ class table {
 			if ( !is_null( $col['sort'] ) ) {
 				parse_str( $_SERVER['QUERY_STRING'], $result );
 				$result['orderby'] = $key;
-				if ( $_GET['orderby'] === $key ) {
-					if ( $_GET['order'] !== 'desc' ) {
+				if ( isset( $_GET['orderby'] ) && $_GET['orderby'] === $key ) {
+					if ( !isset( $_GET['order'] ) || $_GET['order'] !== 'desc' ) {
 						$icon = 'fa-sort-up';
 						$result['order'] = 'desc';
 						$hover = 'fa-sort-down';
