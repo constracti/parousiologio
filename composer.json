@@ -1,8 +1,8 @@
 {
     "require": {
-        "whichbrowser/parser": "^2.0",
-        "phpmailer/phpmailer": "^6.5",
-        "google/apiclient": "^2.11",
-        "phpoffice/phpspreadsheet": "^1.10"
+        "whichbrowser/parser": "^2.1",
+        "phpmailer/phpmailer": "^6.6",
+        "google/apiclient": "^2.12",
+        "phpoffice/phpspreadsheet": "^1.22"
     }
 }

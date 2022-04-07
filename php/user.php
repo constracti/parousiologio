@@ -68,7 +68,8 @@ class user extends entity {
 	public static function select_by_email_address( string $email_address ) {
 		global $db;
 		$stmt = $db->prepare( 'SELECT `xa_user`.* FROM `xa_user` WHERE `email_address` = ? AND `role` > ? LIMIT 1' );
-		$stmt->bind_param( 'si', $email_address, $role = user::ROLE_UNVER );
+		$role = user::ROLE_UNVER;
+		$stmt->bind_param( 'si', $email_address, $role );
 		$stmt->execute();
 		$rslt = $stmt->get_result();
 		$stmt->close();
@@ -80,11 +81,13 @@ class user extends entity {
 	public static function clear_by_email_address( string $email_address ) {
 		global $db;
 		$stmt = $db->prepare( 'DELETE FROM `xa_user` WHERE `email_address` = ? AND `role` = ?' );
-		$stmt->bind_param( 'si', $email_address, $role = user::ROLE_UNVER );
+		$role = user::ROLE_UNVER;
+		$stmt->bind_param( 'si', $email_address, $role );
 		$stmt->execute();
 		$stmt->close();
 		$stmt = $db->prepare( 'DELETE FROM `xa_vlink` WHERE `type` = ? AND `data` = ? AND `act_tm` IS NOT NULL' );
-		$stmt->bind_param( 'ss', $type = 'chmail', $email_address );
+		$type = 'chmail';
+		$stmt->bind_param( 'ss', $type, $email_address );
 		$stmt->execute();
 		$stmt->close();
 	}
