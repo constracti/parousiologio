@@ -101,6 +101,24 @@ page_body_add( 'form_section', $fields, [
 	'delete' => site_href( 'user-delete.php', [ 'user_id' => $user->user_id ] ),
 ] );
 
+page_body_add( function( user $user ): void {
+	echo '<section class="w3-panel w3-content">' . "\n";
+	echo '<div class="w3-card-4 w3-round w3-theme-l4">' . "\n";
+	echo '<div class="w3-container">' . "\n";
+	echo '<h3>αποστολή ειδοποίησης</h3>' . "\n";
+	echo '<p>θα αποσταλεί στο χρήστη ένα ηλεκτρονικό μήνυμα που θα τον ειδοποιεί πως ενημερώθηκαν τα δικαιώματα πρόσβασης του λογαριασμού του</p>' . "\n";
+	echo '<div class="w3-section">' . "\n";
+	$href = site_href( 'user-notify.php', [ 'user_id' => $user->user_id ] );
+	echo sprintf( '<a class="w3-button w3-round w3-theme link-ajax" href="%s">', $href ) . "\n";
+	echo '<span class="fa fa-paper-plane"></span>' . "\n";
+	echo '<span>αποστολή</span>' . "\n";
+	echo '</a>' . "\n";
+	echo '</div>' . "\n";
+	echo '</div>' . "\n";
+	echo '</div>' . "\n";
+	echo '</section>' . "\n";
+}, $user );
+
 
 /********
  * exit *
