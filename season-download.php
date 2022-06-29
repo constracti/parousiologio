@@ -11,50 +11,81 @@ $cols = array_merge( [
 	'last_name' => 'επώνυμο',
 	'first_name' => 'όνομα',
 ], child::COLS );
-$children = ( function(): array {
-	global $db;
-	global $cseason;
-	$stmt = $db->prepare( '
-SELECT `xa_child`.*, `xa_location`.`location_name`, `xa_grade`.`grade_name`
-FROM `xa_follow`
-JOIN `xa_child` ON `xa_follow`.`child_id` = `xa_child`.`child_id`
-JOIN `xa_grade` ON `xa_grade`.`grade_id` = `xa_follow`.`grade_id`
-LEFT JOIN `xa_location` ON `xa_location`.`location_id` = `xa_follow`.`location_id`
-WHERE `xa_follow`.`season_id` = ?
-ORDER BY `xa_location`.`is_swarm` DESC, `xa_location`.`location_name` ASC, `xa_location`.`location_id` ASC,
-`xa_child`.`last_name` ASC, `xa_child`.`first_name` ASC, `xa_child`.`child_id` ASC
-	' );
-	$stmt->bind_param( 'i', $cseason->season_id );
-	$stmt->execute();
-	$rslt = $stmt->get_result();
-	$stmt->close();
-	$children = [];
-	while ( !is_null( $child = $rslt->fetch_object( 'child' ) ) )
-		$children[ $child->child_id ] = $child;
-	$rslt->free();
-	return $children;
-} )();
+
+$follow_list = follow::select( [
+	'season_id' => $cseason->season_id,
+] );
+
+$child_list = child::select();
+
+$grades = grade::select();
+
+$location_list = location::select();
+
+$location_null = (object) [
+	'is_swarm' => -1,
+	'location_name' => NULL,
+	'location_id' => NULL,
+];
+
+foreach ( $follow_list as $follow ) {
+	$follow->child = $child_list[$follow->child_id];
+	$follow->grade = $grades[$follow->grade_id];
+	$follow->location = !is_null( $follow->location_id ) ? $location_list[$follow->location_id] : $location_null;
+	$follow->cols = [
+		'location_name' => $follow->location->location_name,
+		'grade_name' => $follow->grade->grade_name,
+	];
+}
+
+usort( $follow_list, sorter(
+	'~location/is_swarm',
+	'location/location_name',
+	'location/location_id',
+	'child/last_name',
+	'child/first_name',
+	'child/child_id',
+) );
 
 $cols['meta_mobile'] = 'κινητό ενημέρωσης';
-foreach ( $children as $child ) {
-	switch ( $child->get_meta( 'mobile' ) ) {
-		case 'self':
-			$child->meta_mobile = $child->mobile_phone;
-			break;
-		case 'fath':
-			$child->meta_mobile = $child->fath_mobile;
-			break;
-		case 'moth':
-			$child->meta_mobile = $child->moth_mobile;
-			break;
-		default:
-			$child->meta_mobile = NULL;
-	}
+foreach ( $follow_list as $follow ) {
+	$child = $follow->child;
+	$follow->cols['meta_mobile'] = match ( $child->get_meta( 'mobile' ) ) {
+		'self' => $child->mobile_phone,
+		'fath' => $child->fath_mobile,
+		'moth' => $child->moth_mobile,
+		default => NULL,
+	};
 }
 
 $cols['meta_comments'] = 'σχόλια';
-foreach ( $children as $child ) {
-	$child->meta_comments = $child->get_meta( 'comments' );
+foreach ( $follow_list as $follow ) {
+	$child = $follow->child;
+	$follow->cols['meta_comments'] = $child->get_meta( 'comments' );
+}
+
+$date_list = ( function(): array {
+	global $db;
+	$stmt = $db->prepare( '
+SELECT `xa_presence`.`child_id`, MAX(`xa_event`.`event_date`) AS `event_date`
+FROM `xa_presence`
+JOIN `xa_event`
+ON `xa_event`.`event_id` = `xa_presence`.`event_id`
+GROUP BY `xa_presence`.`child_id`
+	' );
+	$stmt->execute();
+	$rslt = $stmt->get_result();
+	$stmt->close();
+	$item_list = [];
+	while ( !is_null( $item = $rslt->fetch_assoc() ) )
+		$item_list[$item['child_id']] = $item['event_date'];
+	$rslt->free();
+	return $item_list;
+} )();
+
+$cols['last_presence'] = 'τελευταία παρουσία';
+foreach ( $follow_list as $follow ) {
+	$follow->cols['last_presence'] = array_key_exists( $follow->child_id, $date_list ) ? $date_list[$follow->child_id] : NULL;
 }
 
 $spreadsheet = new PhpOffice\PhpSpreadsheet\Spreadsheet();
@@ -71,10 +102,12 @@ $r = 1;
 foreach ( array_values( $cols ) as $c => $colname )
 	$sheet->setCellValueByColumnAndRow( $c + 1, $r, $colname );
 
-foreach ( $children as $child ) {
+foreach ( $follow_list as $follow ) {
 	$r++;
-	foreach ( array_keys( $cols ) as $c => $col )
-		$sheet->setCellValueByColumnAndRow( $c + 1, $r, $child->$col );
+	foreach ( array_keys( $cols ) as $c => $col ) {
+		$value = array_key_exists( $col, $follow->cols ) ? $follow->cols[$col] : $follow->child->$col;
+		$sheet->setCellValueByColumnAndRow( $c + 1, $r, $value );
+	}
 }
 
 header( 'Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' );

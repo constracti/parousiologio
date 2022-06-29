@@ -25,6 +25,47 @@ require_once SITE_DIR . 'php/season.php';
 require_once SITE_DIR . 'php/team.php';
 require_once SITE_DIR . 'php/vlink.php';
 
+function sorter( string ...$keys ): callable {
+	return function( $x1, $x2 ) use ( $keys ): int {
+		foreach ( $keys as $key ) {
+			$negate = FALSE;
+			if ( substr( $key, 0, 1 ) === '~' ) {
+				$negate = TRUE;
+				$key = substr( $key, 1 );
+			}
+			$props = explode( '/', $key );
+			$v1 = $x1;
+			$v2 = $x2;
+			foreach ( $props as $prop ) {
+				if ( is_array( $v1 ) ) {
+					assert( array_key_exists( $prop, $v1 ) );
+					$v1 = $v1[$prop];
+				} elseif ( is_object( $v1 ) ) {
+					assert( property_exists( $v1, $prop ) );
+					$v1 = $v1->$prop;
+				} else {
+					assert( FALSE );
+				}
+				if ( is_array( $v2 ) ) {
+					assert( array_key_exists( $prop, $v2 ) );
+					$v2 = $v2[$prop];
+				} elseif ( is_object( $v2 ) ) {
+					assert( property_exists( $v2, $prop ) );
+					$v2 = $v2->$prop;
+				} else {
+					assert( FALSE );
+				}
+			}
+			$cmp = $v1 <=> $v2;
+			if ( $negate )
+				$cmp = -$cmp;
+			if ( $cmp )
+				return $cmp;
+		}
+		return 0;
+	};
+}
+
 
 /**********
  * errors *
