@@ -32,7 +32,7 @@ $location = location::select_by( 'location_id', $team->location_id );
 
 page_title_set( sprintf( '%s (%s %d)', $team->team_name, $location->location_name, $cseason->year ) );
 
-page_style_add( site_href( 'css/presences-container.css', [ 'v' => '0.3' ] ) );
+page_style_add( site_href( 'css/presences-container.css', [ 'v' => '0.4' ] ) );
 page_script_add( site_href( 'js/presences-container.js', [ 'v' => '0.3' ] ) );
 page_script_add( site_href( 'js/presences-property.js', [ 'v' => '0.1' ] ) );
 page_script_add( site_href( 'js/presences-month.js', [ 'v' => '0.1' ] ) );

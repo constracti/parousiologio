@@ -6,8 +6,8 @@ privilege( user::ROLE_OBSER );
 
 page_title_set( sprintf( 'Σύνοψη %d', $cseason->year ) );
 
-page_style_add( site_href( 'css/presences-container.css', [ 'v' => '0.2' ] ) );
-page_script_add( site_href( 'js/presences-container.js', [ 'v' => '0.2.1' ] ) );
+page_style_add( site_href( 'css/presences-container.css', [ 'v' => '0.4' ] ) );
+page_script_add( site_href( 'js/presences-container.js', [ 'v' => '0.3' ] ) );
 page_script_add( site_href( 'js/presences-month.js', [ 'v' => '0.1' ] ) );
 page_script_add( site_href( 'js/presences-modal.js', [ 'v' => '0.1' ] ) );
 

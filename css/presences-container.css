@@ -30,7 +30,7 @@
 	text-align: left;
 }
 
-@media (min-width:993px) {
+@media (min-width:480px) {
 	#presences-table .presences-month.presences-month-hide {
 		display: none;
 	}
@@ -39,7 +39,7 @@
 	}
 }
 
-@media (max-width:992px) {
+@media (max-width:479px) {
 	#presences-container {
 		height: 100vh;
 		padding: 0px;
