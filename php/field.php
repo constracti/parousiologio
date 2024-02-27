@@ -11,7 +11,7 @@ class field {
 			$atts['type'] = 'text';
 		if ( !array_key_exists( 'required', $atts ) )
 			$atts['required'] = FALSE;
-		elseif ( !array_key_exists( 'value', $atts ) )
+		if ( !array_key_exists( 'value', $atts ) )
 			$atts['value'] = NULL;
 		$this->atts = $atts;
 	}
