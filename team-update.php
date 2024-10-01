@@ -17,6 +17,10 @@ $fields = [
 		'required' => TRUE,
 		'value' => $team->team_name,
 	] ),
+	'team_note' => new field( 'team_note', [
+		'placeholder' => 'σημείωση',
+		'value' => $team->team_note,
+	] ),
 	'season_id' => new field_select( 'season_id', season::select_options(), [
 		'placeholder' => 'έτος',
 		'required' => TRUE,
@@ -36,6 +40,7 @@ if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
 		case NULL:
 			$team->location_id = $fields['location_id']->post();
 			$team->team_name = $fields['team_name']->post();
+			$team->team_note = $fields['team_note']->post();
 			$team->season_id = $fields['season_id']->post();
 			$team->on_sunday = $fields['on_sunday']->post();
 			$team->update();

@@ -58,6 +58,12 @@ $presences = $team->check_presences();
 
 page_body_add( function() {
 	global $team;
+	if ( !is_null( $team->team_note ) )
+		echo sprintf( '<div class="w3-panel w3-center w3-small">%s</div>', $team->team_note ) . "\n";
+} );
+
+page_body_add( function() {
+	global $team;
 	global $events;
 	global $children;
 	global $presences;

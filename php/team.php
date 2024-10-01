@@ -6,6 +6,7 @@ class team extends entity {
 		'team_id'     => 'i',
 		'location_id' => 'i',
 		'team_name'   => 's',
+		'team_note'   => 's',
 		'season_id'   => 'i',
 		'on_sunday'   => 'i',
 	];
@@ -13,6 +14,7 @@ class team extends entity {
 	public $team_id;     # integer, primary key
 	public $location_id; # integer
 	public $team_name;   # varchar
+	public $team_note;   # varchar, nullable
 	public $season_id;   # integer
 	public $on_sunday;   # integer
 

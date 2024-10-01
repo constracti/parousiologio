@@ -98,6 +98,8 @@ $panel->add( 'team_id', function( $item ) {
 	echo '<li class="flex">' . "\n";
 	echo '<div>' . "\n";
 	echo sprintf( '<div>%s</div>', $team->team_name ) . "\n";
+	if ( !is_null( $team->team_note ) )
+		echo sprintf( '<div class="w3-small">%s</div>', $team->team_note ) . "\n";
 }, function( $item ) {
 	if ( is_null( $item->team_id ) )
 		return;
