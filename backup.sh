@@ -10,10 +10,10 @@ then
 	exit 1
 fi
 
-DB_HOST=$(php -f $CONFIG -r "require_once '$CONFIG'; echo DB_HOST;")
-DB_USER=$(php -f $CONFIG -r "require_once '$CONFIG'; echo DB_USER;")
-DB_PASS=$(php -f $CONFIG -r "require_once '$CONFIG'; echo DB_PASS;")
-DB_NAME=$(php -f $CONFIG -r "require_once '$CONFIG'; echo DB_NAME;")
+DB_HOST=$(php -r "require_once '$CONFIG'; echo DB_HOST;")
+DB_USER=$(php -r "require_once '$CONFIG'; echo DB_USER;")
+DB_PASS=$(php -r "require_once '$CONFIG'; echo DB_PASS;")
+DB_NAME=$(php -r "require_once '$CONFIG'; echo DB_NAME;")
 
 
 # dump the database
