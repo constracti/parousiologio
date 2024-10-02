@@ -103,7 +103,7 @@ function bar_link( array $arguments = [] ) {
 page_nav_add( function() {
 ?>
 <a class="w3-bar-item w3-button" href="<?= season_href() ?>" title="αρχική">
-	<img src="<?= site_href( 'favicon-256.png' ) ?>" style="height: 24px; width: auto; margin: -4px 0px;" />
+	<img src="<?= site_href( THEME_ICON ) ?>" style="height: 24px; width: auto; margin: -4px 0px;" />
 	<span class="w3-hide-small"><?= SITE_NAME ?></span>
 </a>
 <?php
@@ -525,14 +525,14 @@ function page_html() {
 <!DOCTYPE html>
 <html lang="el">
 	<head>
-		<meta charset="UTF-8" />
+		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="author" content="constracti" />
-		<meta name="description" content="Παρουσιολόγιο Χαρούμενων Αγωνιστών Αθήνας" />
-		<meta name="keywords" content="παρουσίες, παρουσίες χα, παρουσιολόγιο, χαρούμενοι αγωνιστές, χαρούμενοι, αγωνιστές, παρουσιολόγιο χαρούμενων αγωνιστών, παρουσιολόγιο χα, χα, parousies, parousies xa, parousiologio, xaroumenoi agonistes, xaroumenoi, agonistes, parousiologio xaroumenon agoniston, parousiologio xa, xa" />
-		<meta name="theme-color" content="#2196f3" />
+		<meta name="description" content="<?= SITE_DESCRIPTION ?>" />
+		<meta name="keywords" content="παρουσίες, παρουσίες χα, παρουσιολόγιο, χαρούμενοι αγωνιστές, παρουσιολόγιο χαρούμενων αγωνιστών, παρουσιολόγιο χα" />
+		<meta name="theme-color" content="<?= THEME_COLOR ?>" />
 		<title><?= $page_title ?? SITE_NAME ?></title>
-		<link rel="icon" href="<?= site_href( 'favicon-256.png' ) ?>" />
+		<link rel="icon" href="<?= site_href( THEME_ICON ) ?>" />
 <?php
 	foreach ( $page_styles as $style ) {
 ?>

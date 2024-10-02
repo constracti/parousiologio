@@ -3,6 +3,11 @@
 define( 'SITE_DIR', '' );
 define( 'SITE_URL', '' );
 define( 'SITE_NAME', '' );
+define( 'SITE_DESCRIPTION' , '' );
+
+define( 'THEME_COLOR', '' );
+define( 'THEME_ICON', '' );
+define( 'THEME_PATH' , '' );
 
 
 /**********
