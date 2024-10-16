@@ -14,15 +14,16 @@ DB_HOST=$(php -r "require_once '$CONFIG'; echo DB_HOST;")
 DB_USER=$(php -r "require_once '$CONFIG'; echo DB_USER;")
 DB_PASS=$(php -r "require_once '$CONFIG'; echo DB_PASS;")
 DB_NAME=$(php -r "require_once '$CONFIG'; echo DB_NAME;")
+DB_DUMP=$(php -r "require_once '$CONFIG'; echo DB_DUMP;")
 
 
 # dump the database
 
 cd $BACKUP
 
-FILE_NAME=$DB_NAME-$(date +%Y-%m-%d).sql
+FILE_NAME=$DB_DUMP-$(date +%Y-%m-%d).sql
 
-mysqldump --host=$DB_HOST --user=$DB_USER --pass="$DB_PASS" $DB_NAME > $FILE_NAME
+mysqldump --host=$DB_HOST --user=$DB_USER --password="$DB_PASS" $DB_NAME > $FILE_NAME
 
 
 # compress backup file
@@ -45,6 +46,6 @@ rm $FILE_NAME
 
 # cleanup old backups
 
-find $DB_NAME-*-d.zip -mtime +31 -delete
+find $DB_DUMP-*-d.zip -mtime +31 -delete
 
-find $DB_NAME-*-m.zip -mtime +366 -delete
+find $DB_DUMP-*-m.zip -mtime +366 -delete
