@@ -22,7 +22,7 @@ if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
 	$mail = new mailer();
 	$mail->addAddress( $email_address );
 	$mail->Subject = sprintf( '%s - %s', SITE_NAME, 'αλλαγή διεύθυνσης email' );
-	$mail->msgHTML( implode( mailer::NEWLINE, [
+	$mail->msgHTML( implode( mailer::CRLF, [
 		sprintf( '<p>Για να επαναφέρεις τη διεύθυνση email του λογαριασμού σου στο <a href="%s">%s</a>, ακολούθησε τον παρακάτω σύνδεσμο:</p>', site_href(), SITE_NAME ),
 		sprintf( '<p><a href="%s">%s</a></p>', $vlink->url(), 'αλλαγή διεύθυνσης email' ),
 		'<hr />',
