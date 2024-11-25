@@ -27,7 +27,7 @@ class mailer extends PHPMailer\PHPMailer\PHPMailer {
 
 	public function send() {
 		$success = parent::send();
-		$this->save();
+		//$this->save(); // gmail saves sent messages automatically
 		return $success;
 	}
 }
