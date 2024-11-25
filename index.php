@@ -155,11 +155,6 @@ page_body_add( [ $panel, 'html' ], $items );
 
 page_body_add( function() {
 	echo '<footer class="w3-panel w3-center w3-small">' . "\n";
-	echo '<span class="fa fa-envelope"></span>' . "\n";
-	echo '<span>επικοινωνία:</span>' . "\n";
-	echo sprintf( '<a href="mailto:%s">%s</a>', MAIL_USER, MAIL_USER ) . "\n";
-	echo '</footer>' . "\n";
-	echo '<footer class="w3-panel w3-center w3-small">' . "\n";
 	echo sprintf( '<img src="%s" height="16" width="16">', site_href( 'img/agonistes.png' ) ) . "\n";
 	echo '<a href="https://agonistes.gr/" target="_blank" title="Χαρούμενοι Αγωνιστές">Χαρούμενοι Αγωνιστές</a>' . "\n";
 	echo '<span>|</span>' . "\n";

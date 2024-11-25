@@ -111,7 +111,13 @@ class user extends entity {
 	public function inform() {
 		require_once SITE_DIR . 'php/mailer.php';
 		$mail = new mailer();
-		$mail->addAddress( MAIL_USER );
+		$admins = array_merge( user::select( [
+			'role' => user::ROLE_ADMIN,
+		] ), user::select( [
+			'role' => user::ROLE_SUPER,
+		] ) );
+		foreach ( $admins as $admin )
+			$mail->addBcc( $admin->email_address );
 		$mail->addReplyTo( $this->email_address );
 		$mail->Subject = sprintf( '%s - %s', SITE_NAME, 'εγγραφή' );
 		$mail->msgHTML( implode( mailer::CRLF, [
