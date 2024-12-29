@@ -40,6 +40,26 @@ foreach ( $children as $child ) {
 	$child->meta_comments = $child->get_meta( 'comments' );
 }
 
+$cols['presence_count'] = 'πλήθος παρουσιών';
+$cols['presence_last'] = 'τελευταία παρουσία';
+foreach ( $children as $child ) {
+	$child->presence_list = [];
+	$child->presence_last = NULL;
+}
+$events = $team->select_events();
+foreach ( $team->check_presences() as $presence ) {
+	if ( !$presence->check )
+		continue;
+	$child = $children[$presence->child_id];
+	$child->presence_list[] = $events[ $presence->event_id ];
+}
+foreach ( $children as $child ) {
+	usort( $child->presence_list, sorter( '~event_date_fixed' ) );
+	$child->presence_count = count( $child->presence_list );
+	if ( !empty( $child->presence_list ) )
+		$child->presence_last = $child->presence_list[0]->event_date_fixed;
+}
+
 $spreadsheet = new PhpOffice\PhpSpreadsheet\Spreadsheet();
 $spreadsheet->getProperties()
 	->setCreator( SITE_NAME )
