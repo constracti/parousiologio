@@ -2,40 +2,77 @@
 
 abstract class entity {
 
-	public static function select( array $where = [], array $orderby = [], $limit = NULL ): array {
+	private static function wherec( array $struct ): array {
+		if ( // equality of key and value
+				count( array_filter( array_keys( $struct ), function( $key ): bool {
+					return !is_string( $key ) || !array_key_exists( $key, static::FIELDS );
+				} ) ) === 0
+				) {
+			$struct = array_map( function( string $key, $value ): array {
+				return [ '=', $key, $value ];
+			}, array_keys( $struct ), array_values( $struct ) );
+			array_unshift( $struct, 'AND' );
+		}
+		$c = count( $struct );
+		if (
+				$c > 1
+				&&
+				is_string( $struct[0] )
+				&&
+				in_array( $struct[0] = mb_strtoupper( $struct[0] ), [ 'AND', 'OR' ], TRUE )
+				) {
+			// and & or
+			$where = [];
+			$type_list = [];
+			$value_list = [];
+			for ( $i = 1; $i < $c; $i++ )
+				list( $where[], $type_list[], $value_list[] ) = static::wherec( $struct[$i] );
+			$where = '(' . implode( ' ' . $struct[0] . ' ', $where ) . ')';
+			$type_list = array_merge( ...$type_list );
+			$value_list = array_merge( ...$value_list );
+		} elseif (
+				$c === 3
+				&&
+				is_string( $struct[0] )
+				&&
+				in_array( $struct[0] = mb_strtoupper( $struct[0] ), [ '=', 'LIKE' ], TRUE )
+				&&
+				is_string( $struct[1] )
+				&&
+				array_key_exists( $struct[1], static::FIELDS )
+				) {
+			// leaf-2
+			$where = '(`' . $struct[1] . '` ' . $struct[0] . ' ?)';
+			$type = static::FIELDS[$struct[1]];
+			$value = $struct[2];
+			$type_list = [ $type, ];
+			$value_list = [ $value, ];
+		} else {
+			// error
+			exit( 'wherec: struct not valid' );
+		}
+		return [ $where, $type_list, $value_list, ];
+	}
+
+	public static function select( ?array $wherec = NULL, array $orderby = [], $limit = NULL ): array {
 		global $db;
 		$class = get_called_class();
 		$fields = $class::FIELDS;
-		// PROPERTIES
-		$props = [];
-		$id = NULL;
-		foreach ( $fields as $prop => $type ) {
-			if ( is_null( $id ) ) {
-				$id = $prop;
-			}
-			$props[] = sprintf( '`%s`', $prop );
-		}
-		$props = implode( ', ', $props );
+		$id = array_key_first( $fields );
+		// SELECT
+		$props = array_map( function( string $field ): string {
+			return sprintf( '`%s`', $field );
+		}, array_keys( $fields ) );
+		$select = sprintf( 'SELECT %s FROM `xa_%s`', implode( ', ', $props ), $class );
 		// WHERE
-		$wh = [];
-		$types = [];
-		$values = [];
-		foreach ( $where as $prop => $value ) {
-			if ( !array_key_exists( $prop, $fields ) )
-				continue;
-			if ( is_null( $value ) ) {
-				$wh[] = sprintf( '`%s` IS NULL', $prop );
-			} else {
-				$wh[] = sprintf( '`%s` = ?', $prop );
-				$types[] = $fields[ $prop ];
-				$values[] = $value;
-			}
-		}
-		$types = implode( $types );
-		if ( empty( $wh ) )
+		if ( $wherec === [] )
+			$wherec = NULL;
+		if ( !is_null( $wherec ) ) {
+			list( $where, $type_list, $value_list ) = static::wherec( $wherec );
+			$where = ' WHERE ' . $where;
+		} else {
 			$where = '';
-		else
-			$where = ' WHERE ' . implode( ' AND ', $wh );
+		}
 		// ORDER BY
 		if ( empty( $orderby ) )
 			$orderby = [ $id => 'ASC' ];
@@ -59,10 +96,10 @@ abstract class entity {
 		else
 			$limit = sprintf( ' LIMIT %d', $limit );
 		// QUERY
-		$sql = sprintf( 'SELECT %s FROM `xa_%s`', $props, $class ) . $where . $orderby . $limit;
+		$sql = $select . $where . $orderby . $limit;
 		$stmt = $db->prepare( $sql );
-		if ( !empty( $values ) )
-			$stmt->bind_param( $types, ...$values );
+		if ( !is_null( $wherec ) )
+			$stmt->bind_param( implode( $type_list ), ...$value_list );
 		$stmt->execute();
 		$rslt = $stmt->get_result();
 		$stmt->close();
@@ -177,19 +214,25 @@ abstract class entity {
 		failure( 'argument_not_valid', $key );
 	}
 
-	public static function count(): int {
+	public static function count( ?array $wherec = NULL ): int {
 		global $db;
-		$class = get_called_class();
-		$fields = $class::FIELDS;
-		$id = NULL;
-		foreach ( $fields as $prop => $type ) {
-			if ( is_null( $id ) ) {
-				$id = $prop;
-				break;
-			}
+		$class = static::NAME;
+		$fields = static::FIELDS;
+		$id = array_key_first( $fields );
+		// SELECT
+		$select = sprintf( 'SELECT COUNT(`%s`) AS `count` FROM `xa_%s`', $id, $class );
+		// WHERE
+		if ( !is_null( $wherec ) ) {
+			list( $where, $type_list, $value_list ) = static::wherec( $wherec );
+			$where = ' WHERE ' . $where;
+		} else {
+			$where = '';
 		}
-		$sql = sprintf( 'SELECT COUNT(`%s`) AS `count` FROM `xa_%s`', $id, $class );
+		// QUERY
+		$sql = $select . $where;
 		$stmt = $db->prepare( $sql );
+		if ( !is_null( $wherec ) )
+			$stmt->bind_param( implode( $type_list ), ...$value_list );
 		$stmt->execute();
 		$rslt = $stmt->get_result();
 		$stmt->close();

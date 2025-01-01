@@ -2,6 +2,8 @@
 
 class child extends entity {
 
+	const NAME = 'child';
+
 	const FIELDS = [
 		'child_id'      => 'i',
 		'last_name'     => 's',
