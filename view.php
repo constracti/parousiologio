@@ -98,6 +98,15 @@ page_body_add( [ $panel, 'html' ], $items );
 
 page_body_add( function() {
 ?>
+<hr>
+<section class="w3-panel w3-content w3-center">
+	<p><a href="<?= season_href( 'location-null.php' ) ?>">παιδιά χωρίς περιοχή</a></p>
+</section>
+<?php
+} );
+
+page_body_add( function() {
+?>
 <section class="action">
 	<a href="<?= season_href( 'season-download.php' ) ?>" class="w3-button w3-circle w3-theme-action" title="μεταφόρτωση">
 		<span class="fa fa-download"></span>
