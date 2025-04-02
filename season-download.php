@@ -64,6 +64,32 @@ foreach ( $follow_list as $follow ) {
 	$follow->cols['meta_comments'] = $child->get_meta( 'comments' );
 }
 
+$cols['presence_count'] = 'πλήθος παρουσιών';
+$precense_count = ( function( season $season ): array {
+	global $db;
+	$stmt = $db->prepare( '
+
+SELECT `xa_presence`.`child_id`, COUNT(`xa_event`.`event_id`) AS `child_presences`
+FROM `xa_event`
+LEFT JOIN `xa_presence`
+ON `xa_presence`.`event_id` = `xa_event`.`event_id`
+WHERE `xa_event`.`season_id` = ?
+GROUP BY `xa_presence`.`child_id`
+	' );
+	$stmt->bind_param( 'i', $season->season_id );
+	$stmt->execute();
+	$rslt = $stmt->get_result();
+	$stmt->close();
+	$item_list = [];
+	while ( !is_null( $item = $rslt->fetch_assoc() ) )
+		$item_list[$item['child_id']] = $item['child_presences'];
+	$rslt->free();
+	return $item_list;
+} )( $cseason );
+foreach ( $follow_list as $follow )
+	$follow->cols['presence_count'] = isset( $precense_count[$follow->child_id] ) ? $precense_count[$follow->child_id] : 0;
+
+$cols['last_presence'] = 'τελευταία παρουσία';
 $date_list = ( function(): array {
 	global $db;
 	$stmt = $db->prepare( '
@@ -82,11 +108,8 @@ GROUP BY `xa_presence`.`child_id`
 	$rslt->free();
 	return $item_list;
 } )();
-
-$cols['last_presence'] = 'τελευταία παρουσία';
-foreach ( $follow_list as $follow ) {
-	$follow->cols['last_presence'] = array_key_exists( $follow->child_id, $date_list ) ? $date_list[$follow->child_id] : NULL;
-}
+foreach ( $follow_list as $follow )
+	$follow->cols['last_presence'] = isset( $date_list[$follow->child_id] ) ? $date_list[$follow->child_id] : NULL;
 
 $spreadsheet = new PhpOffice\PhpSpreadsheet\Spreadsheet();
 $spreadsheet->getProperties()
