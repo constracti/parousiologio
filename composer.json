@@ -3,6 +3,6 @@
         "whichbrowser/parser": "^2.1.8",
         "phpmailer/phpmailer": "^7.0.1",
         "google/apiclient": "^2.18.4",
-        "phpoffice/phpspreadsheet": "^1.30.4"
+        "phpoffice/phpspreadsheet": "^1.30.5"
     }
 }
