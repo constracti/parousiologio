@@ -41,7 +41,8 @@ if ( array_key_exists( 'code', $_GET ) ) {
 	epoint::write( $user->user_id );
 	redirect();
 } elseif ( array_key_exists( 'error', $_GET ) ) {
-	failure( sprintf( 'Η αυθεντικοποίηση δεν ήταν επιτυχής.<br /><code>%s</code>', $_GET['error'] ) );
+	$error = htmlspecialchars( $_GET['error'], ENT_NOQUOTES );
+	failure( sprintf( 'Η αυθεντικοποίηση δεν ήταν επιτυχής.<br /><code>%s</code>', $error ) );
 } else {
 	$auth_url = $client->createAuthUrl();
 	redirect( filter_var( $auth_url, FILTER_SANITIZE_URL ) );
