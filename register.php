@@ -7,11 +7,9 @@ logout();
 $fields = [
 	'last_name' => new field( 'last_name', [
 		'placeholder' => 'επώνυμο',
-		'value' => $cuser->last_name,
 	] ),
 	'first_name' => new field( 'first_name', [
 		'placeholder' => 'όνομα',
-		'value' => $cuser->first_name,
 	] ),
 	'email_address' => new field_email( 'email_address', [
 		'placeholder' => 'διεύθυνση email',
