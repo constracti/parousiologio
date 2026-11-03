@@ -1,10 +1,8 @@
 {
 	"require": {
 		"phpmailer/phpmailer": "^7.1.1",
-		"google/apiclient": "^2.19.4",
-		"guzzlehttp/guzzle": "^7.12.1",
-		"guzzlehttp/psr7": "^2.12.1",
-		"phpoffice/phpspreadsheet": "^1.30.6",
+		"google/apiclient": "^2.20.1",
+		"phpoffice/phpspreadsheet": "^1.30.7",
 		"whichbrowser/parser": "^2.1.8"
 	}
 }
