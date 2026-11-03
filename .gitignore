@@ -1,4 +1,3 @@
 lib/
 php/config.php
 vendor/
-composer.lock
